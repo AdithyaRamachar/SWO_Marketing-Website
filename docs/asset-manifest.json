@@ -1,0 +1,26 @@
+{
+  "project": "Smart Workout Optimizer (SWO) standalone marketing website",
+  "generated_on": "2026-10-24",
+  "copied_assets": [
+    "references/external-templates/01-hevy-exercise-card.png",
+    "references/external-templates/02-hevy-progress-tracking.png",
+    "references/external-templates/03-reach-out-section.png",
+    "references/external-templates/04-marketing-hero.png",
+    "references/external-templates/05-value-communication.png",
+    "references/external-templates/06-app-insights-cards.png",
+    "references/external-templates/07-claim-backing.png",
+    "references/external-templates/08-athlete-usage.png",
+    "references/external-templates/09-landing-page-background.png",
+    "references/product-screenshots/session-end-card.png",
+    "references/product-screenshots/caution-explanation.png",
+    "references/product-screenshots/dashboard.png",
+    "references/product-screenshots/exercise-card.png",
+    "references/product-screenshots/exercise-card-caution-message.png",
+    "references/product-screenshots/exercise-card-progress-message.png",
+    "references/photography/landing-page-photo.jpg",
+    "references/photography/post-workout-01.jpg",
+    "references/photography/workout-01.jpg",
+    "references/photography/workout-02.jpg"
+  ],
+  "missing_source_paths": []
+}

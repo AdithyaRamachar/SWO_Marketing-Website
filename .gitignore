@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.vite/
+
+# Tracker intermediate cache (ledger + summary ARE committed; raw cache is not)
+tracking/.cache/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.local
+
+# Logs
+*.log
+npm-debug.log*
