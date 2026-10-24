@@ -1,0 +1,5 @@
+{"_synthetic":true,"type":"user","sessionId":"SYNTHETIC-bbb","uuid":"syn-u-10","timestamp":"2026-10-21T08:00:00.000Z"}
+{"_synthetic":true,"type":"assistant","sessionId":"SYNTHETIC-bbb","requestId":"SYN-REQ-B0","uuid":"syn-b-0","timestamp":"2026-10-21T08:00:01.000Z","message":{"id":"syn-msg-B0","model":"synthetic-model-a"}}
+{"_synthetic":true,"type":"assistant","sessionId":"SYNTHETIC-bbb","requestId":"SYN-REQ-B1","uuid":"syn-b-1","timestamp":"2026-10-21T08:00:02.000Z","requestedModel":"synthetic-model-a","isSidechain":false,"message":{"id":"syn-msg-B1","model":"synthetic-model-a","usage":{"input_tokens":5,"output_tokens":6,"cache_creation_input_tokens":7}}}
+{"_synthetic":true,"type":"assistant","sessionId":"SYNTHETIC-bbb","requestId":"SYN-REQ-B2","uuid":"syn-b-2","timestamp":"2026-10-21T08:00:03.000Z","requestedModel":"synthetic-model-a","isSidechain":false,"message":{"id":"syn-msg-B2","model":"synthetic-model-a","usage":{"service_tier":"standard"}}}
+{"_synthetic":true,"type":"file-history-delta","sessionId":"SYNTHETIC-bbb","uuid":"syn-b-3","timestamp":"2026-10-21T08:00:04.000Z"}
