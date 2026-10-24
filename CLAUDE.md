@@ -44,7 +44,9 @@ Caution: port 4173 may be in use by another project on this machine. Use `--port
 Copy lives in `src/content/site-content.json`, validated by `src/content/schema.ts` (Zod) through `validateSiteContent()` in `src/content/validate.ts`. Components take the validated `SiteContent` type; **never import the JSON and render it directly.** Invalid content is rejected with the exact field path, never partly rendered. The schema rejects unknown fields, placeholder links, unresolved anchors, and affirmative unsupported claims (heuristic, **not** editorial review). Details: `docs/content-model.md`.
 
 ## Reusable components (`src/components/`)
-`Button`/`ButtonLink`, `Card`, `SectionContainer`, `SectionHeading`, `StatusBadge`, `FormField`/`TextInput`/`Select`. APIs: `docs/component-reference.md`. Not built yet (Phase D, only if needed): hero, feature section, FAQ, footer, recommendation panel, screenshot component.
+`Button`/`ButtonLink`, `Card`, `SectionContainer`, `SectionHeading`, `StatusBadge`, `FormField`/`TextInput`/`Select`, plus `ProductScreenshot` (added in Phase D: responsive `srcset`, `alt`/`width`/`height` from content, lazy except the hero). APIs: `docs/component-reference.md`.
+
+Page sections live in `src/sections/` (header, hero, problem, how-it-works, status, feature showcase, methodology, audiences, FAQ, final CTA, footer) and are composed — composition only, no copy — by `src/page/MarketingPage.tsx`. Sections take validated props; none imports the JSON.
 
 ## Claude Code tooling
 | Tool | Location | Use |
@@ -69,26 +71,32 @@ Details: `docs/token-tracking.md`. Uncollectable sessions: `tracking/manual-sess
 ## Evidence
 Index and per-item write-ups: `docs/evidence/README.md`. Phase summary: `docs/phase-c-report.md`. Traceability: `docs/traceability-matrix.md`. Mark nothing "verified" without the command and its real output.
 
-## Current status (end of Phase C)
+## Current status (finalized — Phase D complete, pushed to GitHub)
+Detail, with commands and their output: `docs/phase-d-report.md`, `docs/evidence/README.md`.
+Final assignment evidence: `docs/evidence/final-assignment/README.md`.
+
 | Area | Status |
 |---|---|
-| Token/session tracker | **Done**, extended in Phase C (subagents). Phase B tests preserved |
-| Design tokens, style guide, contrast checks | **Done**, tested. Some values still *proposed* (breakpoints, shadows, focus ring, Inter not loaded); see style guide |
-| UI primitives, showcase page | **Done**, tested; not yet used by a real page |
-| Structured content + validation + demo render | **Done**, tested. Sample copy is draft: `swoImplementation` statements need owner confirmation |
-| `design-system-auditor` subagent | **Done and demonstrated** (3/3 planted violations found on a blind fixture; corrected fixture passes). Over-reports once; format not fully reliable |
-| `optimize-web-images` skill | **Done and demonstrated** (3 attempts, 2 permission defects found and fixed; 6 outputs, 46/46 checks) |
-| Fresh-session handoff test | **Partly done.** An automated fresh `claude -p` process answered 9/9 questions from this file alone (`docs/evidence/handoff/`). The interactive test the assignment describes still needs the user |
-| Landing page sections (hero, FAQ, etc.), real-site screenshots | **Not started (Phase D)** |
-| Traceability matrix | Mostly **partial**; only the form-control and token-sync rows are fully verified |
+| Marketing homepage | **Done.** 11 sections in `src/sections/`, composed by `src/page/MarketingPage.tsx`, mounted from `src/main.tsx`. `npm run dev` serves it at `/` |
+| Design tokens, style guide, contrast checks | **Done**, tested. 98 tokens; 23/23 contrast pairs pass. Breakpoints, shadows and focus ring still marked *proposed*; Inter not loaded |
+| UI primitives | **Done** and used by the real page |
+| Structured content + validation | **Done.** Single validation boundary at `src/main.tsx`; `swoImplementation` copy is draft and needs owner confirmation |
+| `design-system-auditor` subagent | **Done.** FAIL with 3 real violations → fixes → PASS (0). Evidence: `docs/evidence/subagent-audit/` and `docs/evidence/final-assignment/02-audit-subagent.md` |
+| `optimize-web-images` skill | **Done.** Phase D run: 9 outputs, 122/122 verification checks; originals unmodified. Evidence: `docs/evidence/image-optimization/` and `docs/evidence/final-assignment/04-custom-skill.md` |
+| Responsive and interactive checks | **Done by machine.** No overflow at 375/768/1024/1440; 7/7 images; 17/17 links. **No human has viewed the site** |
+| Quality gate | **Green.** `npm run check` exit 0; 248 tests |
+| Token/session tracker | **Done.** 16 sessions, 642 requests, ~106.5 M tokens (provisional; re-run `npm run track:usage` when this session ends) |
+| Fresh-session handoff test | **Partly done.** Automated `claude -p` 9/9; interactive user-run test still pending |
+| Traceability matrix | **Partial**; not re-verified against Phase D sections |
 
-**Next recommended step:** the user reviews Phase C, runs the interactive fresh-session handoff test (script in `docs/evidence/handoff/README.md`), then gives a separate Phase D instruction. Open decisions for Phase D: load Inter or not; confirm `swoImplementation` copy; crop/replace screenshots that show a third-party dev URL and a personal profile photo; whether `workout-02` (visible sparkle mark, third-party logos) suits "personal photography".
+**Open items for a future session:** human review of the live site; confirm `swoImplementation` copy; consider loading Inter; promote *proposed* style-guide values; re-verify traceability matrix; run `npm run track:usage` once this session ends for settled totals.
 
 ## Acceptance tests (assignment)
 - Design tokens trace to explicit rules in `docs/style-guide.md` and a reference in `docs/reference-catalogue.md`: **demonstrated** for `StatusBadge` (green) in the traceability matrix.
 - Structured content validates against a declared schema and renders: **demonstrated** (tests + `dev/content-demo.html`).
-- The design-system subagent catches planted violations and cites exact rules: **demonstrated** on a fixture with three planted violations (the brief's literal "real component" wording was met with a realistic fixture file, not a production component).
+- The design-system subagent catches violations and cites exact rules: **demonstrated twice** — 3/3 planted violations on a Phase C fixture, and in Phase D **3 real violations in the shipped page**, fixed, with a clean re-run.
 - A fresh session understands the project from this file: **automated analogue passed 9/9**; the interactive user-run test is still pending.
+- The marketing website runs locally, renders validated content and is responsive: **demonstrated** (`docs/phase-d-report.md`). A human has **not** yet viewed it.
 - A custom skill is applied to a real task with before/after evidence: **demonstrated**.
 - Token and session totals are recorded with source and limitations: **recorded**; final figures only settle when the sessions end.
 

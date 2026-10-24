@@ -1,0 +1,43 @@
+---
+
+## Phase D image optimization — complete
+
+**122/122 verification checks pass.** Report written to `docs/evidence/image-optimization/phase-d/before-after.md`.
+
+### Settings chosen and why
+
+| Source | Role | Widths | Format | Quality | Crop (source px) |
+|---|---|---|---|---|---|
+| `dashboard.png` | App screenshot | 400, 800 | webp | 85 | top 72 |
+| `caution-explanation.png` | App screenshot | 400, 800 | webp | 85 | top 225 |
+| `exercise-card-progress-message.png` | App screenshot | 400, 800 | webp | 85 | top 225 |
+| `session-end-card.png` | App screenshot | 400, 800 | webp | 85 | top 870, bottom 285 |
+| `workout-01.jpg` | Full-width photo | 800 (1600 skipped — source 1152px) | webp | 78 | none |
+
+### Visual confirmation
+
+- **`dashboard-400/800.webp`**: Image starts at "OPTIMAL ZONE ✓" — the black phone status bar (72 px) is gone, no app UI cut.
+
+- **`caution-explanation-400/800.webp`**: Image starts at the app's own "← New Session" header in gray — status bar and full Chrome address bar capsule (225 px combined) removed. Required two passes: 192 px left the bottom edge of the URL pill visible at 800 px; corrected to 225 px.
+
+- **`exercise-card-progress-message-400/800.webp`**: Same band structure, same fix. Starts at "← New Session · 58:02", the "Triceps BW Extension — Optimal day to progress" exercise card, set inputs and "OPTIMAL ZONE ✓" badge are all intact. "Finish" button visible at bottom.
+
+- **`session-end-card-400/800.webp`**: Required three passes. Final crop (top 870, bottom 285) shows exactly "Hanging Leg Raise" through "Triceps BW Extension" with their GREEN/RED badges — all eight rows with exercise name, set/rep subtitle, and badge fully readable. "Dumbbell Shoulder Press" correctly shows RED. No user profile photo, no name, no summary card, no "Download SWO / QR" row, no emoji reaction row, no bottom navigation bar.
+
+- **`workout-01-800.webp`**: Clean full-frame gym photograph — person from behind on a lat-pulldown machine, no face visible, no cropping applied as intended. ("Life Fitness" equipment branding incidentally appears in the frame as documentary photography of a real gym setting, not a design asset.)
+
+### Outputs
+
+| Output | Dimensions | Bytes saved |
+|---|---|---|
+| `/images/product/dashboard-400.webp` | 400×856 | 87.3% |
+| `/images/product/dashboard-800.webp` | 800×1711 | 71.2% |
+| `/images/product/caution-explanation-400.webp` | 400×785 | 90.5% |
+| `/images/product/caution-explanation-800.webp` | 800×1569 | 78% |
+| `/images/product/exercise-card-progress-message-400.webp` | 400×785 | 90.4% |
+| `/images/product/exercise-card-progress-message-800.webp` | 800×1569 | 78.5% |
+| `/images/product/session-end-card-400.webp` | 400×354 | 94.1% |
+| `/images/product/session-end-card-800.webp` | 800×708 | 86.2% |
+| `/images/photography/workout-01-800.webp` | 800×1422 | 83.4% |
+
+All source files confirmed unmodified (SHA-256 checked). EXIF stripped from every output.

@@ -12,6 +12,8 @@
  *   --quality <1-100>  default 82
  *   --lossless         lossless encoding (webp/avif); usually larger for photos
  *   --name <slug>      output base name (single --src only), default from filename
+ *   --crop-top <px>    remove this many rows from the top of each source
+ *   --crop-bottom <px> remove this many rows from the bottom of each source
  *   --manifest <path>  default public/images/manifest.json
  *   --report <path>    also write a markdown before/after table
  *   --dry-run          measure and report without writing any file
@@ -39,6 +41,7 @@ function parse(argv: readonly string[]): { options: OptimizeOptions; report: str
     format: 'webp',
     quality: 82,
     lossless: false,
+    crop: { top: 0, bottom: 0 },
     dryRun: false,
     force: false,
     manifestPath: 'public/images/manifest.json',
@@ -79,6 +82,12 @@ function parse(argv: readonly string[]): { options: OptimizeOptions; report: str
       case '--name':
         options.name = value();
         break;
+      case '--crop-top':
+        options.crop = { ...options.crop, top: Number(value()) };
+        break;
+      case '--crop-bottom':
+        options.crop = { ...options.crop, bottom: Number(value()) };
+        break;
       case '--manifest':
         options.manifestPath = value();
         break;
@@ -109,6 +118,11 @@ async function main(): Promise<void> {
   console.log(table);
 
   for (const key of keys) {
+    const crop = manifest.entries[key]?.crop;
+    if (crop)
+      console.log(
+        `Note: ${key}: cropped ${crop.top}px from the top and ${crop.bottom}px from the bottom; the original is untouched`,
+      );
     const skipped = manifest.entries[key]?.skippedWidths ?? [];
     if (skipped.length > 0)
       console.log(

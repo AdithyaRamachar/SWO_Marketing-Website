@@ -29,6 +29,32 @@
         1600
       ]
     },
+    "references/photography/workout-01.jpg": {
+      "source": {
+        "path": "references/photography/workout-01.jpg",
+        "bytes": 477455,
+        "width": 1152,
+        "height": 2048,
+        "format": "jpeg",
+        "sha256": "b2e456699fc30c00e59d733604160bbbda40f5bb2556e2d610019242124e0fee"
+      },
+      "outputs": [
+        {
+          "path": "public/images/photography/workout-01-800.webp",
+          "publicPath": "/images/photography/workout-01-800.webp",
+          "width": 800,
+          "height": 1422,
+          "format": "webp",
+          "bytes": 79158,
+          "quality": 78,
+          "lossless": false,
+          "bytesSavedPercent": 83.4
+        }
+      ],
+      "skippedWidths": [
+        1600
+      ]
+    },
     "references/photography/workout-02.png": {
       "source": {
         "path": "references/photography/workout-02.png",
@@ -55,6 +81,84 @@
         800,
         1600
       ]
+    },
+    "references/product-screenshots/caution-explanation.png": {
+      "source": {
+        "path": "references/product-screenshots/caution-explanation.png",
+        "bytes": 209414,
+        "width": 864,
+        "height": 1920,
+        "format": "png",
+        "sha256": "6892a52e23896776d867a1c4ac8878a425320565de051e6821accc1437df2ea3"
+      },
+      "outputs": [
+        {
+          "path": "public/images/product/caution-explanation-400.webp",
+          "publicPath": "/images/product/caution-explanation-400.webp",
+          "width": 400,
+          "height": 785,
+          "format": "webp",
+          "bytes": 19830,
+          "quality": 85,
+          "lossless": false,
+          "bytesSavedPercent": 90.5
+        },
+        {
+          "path": "public/images/product/caution-explanation-800.webp",
+          "publicPath": "/images/product/caution-explanation-800.webp",
+          "width": 800,
+          "height": 1569,
+          "format": "webp",
+          "bytes": 46080,
+          "quality": 85,
+          "lossless": false,
+          "bytesSavedPercent": 78
+        }
+      ],
+      "skippedWidths": [],
+      "crop": {
+        "top": 225,
+        "bottom": 0
+      }
+    },
+    "references/product-screenshots/dashboard.png": {
+      "source": {
+        "path": "references/product-screenshots/dashboard.png",
+        "bytes": 144966,
+        "width": 864,
+        "height": 1920,
+        "format": "png",
+        "sha256": "cead328c91a2c68af0196f249902bcb4a35ffe5dcde880ca5bdccd5bea5404c9"
+      },
+      "outputs": [
+        {
+          "path": "public/images/product/dashboard-400.webp",
+          "publicPath": "/images/product/dashboard-400.webp",
+          "width": 400,
+          "height": 841,
+          "format": "webp",
+          "bytes": 18456,
+          "quality": 85,
+          "lossless": false,
+          "bytesSavedPercent": 87.3
+        },
+        {
+          "path": "public/images/product/dashboard-800.webp",
+          "publicPath": "/images/product/dashboard-800.webp",
+          "width": 800,
+          "height": 1682,
+          "format": "webp",
+          "bytes": 41762,
+          "quality": 85,
+          "lossless": false,
+          "bytesSavedPercent": 71.2
+        }
+      ],
+      "skippedWidths": [],
+      "crop": {
+        "top": 103,
+        "bottom": 0
+      }
     },
     "references/product-screenshots/exercise-card-caution-message.png": {
       "source": {
@@ -91,6 +195,45 @@
       ],
       "skippedWidths": []
     },
+    "references/product-screenshots/exercise-card-progress-message.png": {
+      "source": {
+        "path": "references/product-screenshots/exercise-card-progress-message.png",
+        "bytes": 214649,
+        "width": 864,
+        "height": 1920,
+        "format": "png",
+        "sha256": "75fdfdabb8f585c8a65ac1e7d728f9ff2065608c26760fae943f7f945e65150b"
+      },
+      "outputs": [
+        {
+          "path": "public/images/product/exercise-card-progress-message-400.webp",
+          "publicPath": "/images/product/exercise-card-progress-message-400.webp",
+          "width": 400,
+          "height": 785,
+          "format": "webp",
+          "bytes": 20676,
+          "quality": 85,
+          "lossless": false,
+          "bytesSavedPercent": 90.4
+        },
+        {
+          "path": "public/images/product/exercise-card-progress-message-800.webp",
+          "publicPath": "/images/product/exercise-card-progress-message-800.webp",
+          "width": 800,
+          "height": 1569,
+          "format": "webp",
+          "bytes": 46196,
+          "quality": 85,
+          "lossless": false,
+          "bytesSavedPercent": 78.5
+        }
+      ],
+      "skippedWidths": [],
+      "crop": {
+        "top": 225,
+        "bottom": 0
+      }
+    },
     "references/product-screenshots/exercise-card.png": {
       "source": {
         "path": "references/product-screenshots/exercise-card.png",
@@ -125,6 +268,45 @@
         }
       ],
       "skippedWidths": []
+    },
+    "references/product-screenshots/session-end-card.png": {
+      "source": {
+        "path": "references/product-screenshots/session-end-card.png",
+        "bytes": 265273,
+        "width": 864,
+        "height": 1920,
+        "format": "png",
+        "sha256": "6eca193718add658081e84630e0543ab923bd90d33e4efff616b7c4df0b404aa"
+      },
+      "outputs": [
+        {
+          "path": "public/images/product/session-end-card-400.webp",
+          "publicPath": "/images/product/session-end-card-400.webp",
+          "width": 400,
+          "height": 354,
+          "format": "webp",
+          "bytes": 15728,
+          "quality": 85,
+          "lossless": false,
+          "bytesSavedPercent": 94.1
+        },
+        {
+          "path": "public/images/product/session-end-card-800.webp",
+          "publicPath": "/images/product/session-end-card-800.webp",
+          "width": 800,
+          "height": 708,
+          "format": "webp",
+          "bytes": 36600,
+          "quality": 85,
+          "lossless": false,
+          "bytesSavedPercent": 86.2
+        }
+      ],
+      "skippedWidths": [],
+      "crop": {
+        "top": 870,
+        "bottom": 285
+      }
     }
   }
 }

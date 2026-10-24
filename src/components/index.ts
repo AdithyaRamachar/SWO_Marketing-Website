@@ -3,6 +3,8 @@ export type { ButtonProps, ButtonLinkProps, ButtonVariant } from './Button.tsx';
 export { Card } from './Card.tsx';
 export type { CardProps, CardVariant } from './Card.tsx';
 export { FormField, Select, TextInput } from './FormField.tsx';
+export { ProductScreenshot } from './ProductScreenshot.tsx';
+export type { ProductScreenshotProps } from './ProductScreenshot.tsx';
 export type { FormFieldProps, SelectProps, TextInputProps } from './FormField.tsx';
 export { SectionContainer } from './SectionContainer.tsx';
 export type { SectionContainerProps, SectionTone } from './SectionContainer.tsx';

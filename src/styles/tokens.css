@@ -175,6 +175,10 @@
 
   --container-content: 72rem;
   --container-prose: 42rem;
+  /* Bound for a portrait phone screenshot. The sources are 864px wide and up to
+     1920px tall, so without a cap one would fill a desktop viewport on its own.
+     Added in Phase D, when real screenshots were first placed on a page. */
+  --container-screenshot: 22rem;
 
   /* Mobile-first. The style guide specified no breakpoints; these equal
      Tailwind's defaults and are recorded as PROPOSED until Phase D checks

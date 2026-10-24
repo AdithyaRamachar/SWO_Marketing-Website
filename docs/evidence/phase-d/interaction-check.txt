@@ -1,0 +1,64 @@
+--- IMAGES ---
+LOADED  352x740  alt:yes  /images/product/dashboard-400.webp
+LOADED  352x311  alt:yes  /images/product/session-end-card-400.webp
+LOADED  352x782  alt:yes  /images/product/exercise-card-400.webp
+LOADED  352x782  alt:yes  /images/product/exercise-card-caution-message-400.webp
+LOADED  352x690  alt:yes  /images/product/caution-explanation-400.webp
+LOADED  352x690  alt:yes  /images/product/exercise-card-progress-message-400.webp
+LOADED  800x1422  alt:yes  /images/photography/workout-01-800.webp
+7/7 images rendered with real pixels
+--- LINKS ---
+RESOLVES  #main  "Skip to main content"
+RESOLVES  #hero  "SWO"
+RESOLVES  #how-it-works  "How it works"
+RESOLVES  #status  "Guidance states"
+RESOLVES  #product  "The app"
+RESOLVES  #science  "Approach"
+RESOLVES  #faq  "FAQ"
+RESOLVES  #how-it-works  "See the approach"
+RESOLVES  #how-it-works  "See how it works"
+RESOLVES  #status  "What the three states mean"
+RESOLVES  #science  "Walk through the approach"
+RESOLVES  #how-it-works  "How it works"
+RESOLVES  #status  "Guidance states"
+RESOLVES  #product  "The app"
+RESOLVES  #science  "Approach"
+RESOLVES  #audiences  "Who it is for"
+RESOLVES  #faq  "FAQ"
+--- ANCHOR NAVIGATION ---
+OK  #main  target top after click: 0
+OK  #hero  target top after click: 0
+OK  #how-it-works  target top after click: 0
+OK  #status  target top after click: 0
+OK  #product  target top after click: 0
+OK  #science  target top after click: 0
+OK  #faq  target top after click: 0
+OK  #how-it-works  target top after click: 0
+OK  #how-it-works  target top after click: 0
+OK  #status  target top after click: 0
+OK  #science  target top after click: 0
+OK  #how-it-works  target top after click: 0
+OK  #status  target top after click: 0
+OK  #product  target top after click: 0
+OK  #science  target top after click: 0
+OK  #audiences  target top after click: 0
+OK  #faq  target top after click: 0
+--- FAQ DISCLOSURE ---
+6 FAQ items; open before: 0, after clicking each summary: 6
+--- MOBILE MENU (375px) ---
+{
+  "closed": {
+    "expanded": "false",
+    "visible": false
+  },
+  "opened": {
+    "expanded": "true",
+    "visible": true
+  },
+  "escaped": {
+    "expanded": "false",
+    "visible": false
+  },
+  "controls": "_r_0_",
+  "panelFound": true
+}

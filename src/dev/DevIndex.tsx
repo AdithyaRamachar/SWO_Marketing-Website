@@ -2,6 +2,11 @@ import { Card, SectionContainer, SectionHeading } from '../components/index.ts';
 
 const PAGES = [
   {
+    href: '/',
+    title: 'Marketing homepage',
+    description: 'The real site. Built from validated content using the design system.',
+  },
+  {
     href: '/dev/showcase.html',
     title: 'Design-system showcase',
     description: 'Tokens, typography, components and states, read from tokens.css.',
@@ -22,7 +27,7 @@ export function DevIndex() {
           id="dev-index-title"
           eyebrow="Development index"
           title="SWO website: tooling pages"
-          description="The marketing landing page is not built yet. These pages exist to inspect and verify the tooling."
+          description="These pages exist to inspect and verify the design system and the content model. They are served by the dev server only and are not part of the production build."
         />
         <ul className="mt-8 grid gap-6 md:grid-cols-2">
           {PAGES.map((page) => (

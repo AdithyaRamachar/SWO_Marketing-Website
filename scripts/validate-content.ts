@@ -12,6 +12,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
+import { variantSrc } from '../src/content/schema.ts';
 import { validateSiteContent } from '../src/content/validate.ts';
 import type { SiteContent } from '../src/content/schema.ts';
 
@@ -27,10 +28,16 @@ interface Problem {
 function collectImages(content: SiteContent) {
   return [
     { path: 'hero.preview', image: content.hero.preview },
+    ...(content.statusSection.image
+      ? [{ path: 'statusSection.image', image: content.statusSection.image }]
+      : []),
     ...content.features.map((feature, index) => ({
       path: `features[${index}].image`,
       image: feature.image,
     })),
+    ...(content.audiences.image
+      ? [{ path: 'audiences.image', image: content.audiences.image }]
+      : []),
   ];
 }
 
@@ -51,6 +58,33 @@ async function checkImages(content: SiteContent): Promise<Problem[]> {
         path: `${where}`,
         message: `declared ${image.width}x${image.height} but public${image.src} is ${meta.width}x${meta.height}`,
       });
+    }
+
+    // Every srcSet candidate must exist too, and be the width it claims.
+    for (const width of image.responsiveWidths ?? []) {
+      const variant = variantSrc(image.src, width);
+      if (variant === image.src) {
+        problems.push({
+          path: `${where}.responsiveWidths`,
+          message: `${width} is the width already in "${image.src}"; list only the other generated widths`,
+        });
+        continue;
+      }
+      const variantOnDisk = path.join(root, 'public', variant);
+      if (!existsSync(variantOnDisk)) {
+        problems.push({
+          path: `${where}.responsiveWidths`,
+          message: `file not found: public${variant}. Generate that width with the optimize-web-images skill, or remove ${width}`,
+        });
+        continue;
+      }
+      const variantMeta = await sharp(variantOnDisk).metadata();
+      if (variantMeta.width !== width) {
+        problems.push({
+          path: `${where}.responsiveWidths`,
+          message: `public${variant} is ${variantMeta.width}px wide, not ${width}px`,
+        });
+      }
     }
   }
   return problems;

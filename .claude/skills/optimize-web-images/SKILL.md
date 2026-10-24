@@ -53,6 +53,29 @@ are third-party layout references, not SWO product imagery
 | Photo going to a very slow connection or small slot | `400,800` | `webp` | `72` | Smaller still; check it by eye |
 | Need the smallest file and have time to spare | as above | `avif` | `60` | Often smaller than WebP, much slower to encode |
 
+### Cropping edge rows
+
+`--crop-top <px>` and `--crop-bottom <px>` remove whole rows from the source
+before resizing. They exist for one job: **stripping things that must not appear
+on a public site from an otherwise good screenshot** — a phone status bar, a
+browser address bar showing an internal development URL, or a header carrying a
+real person's name and photo. Several of the supplied screenshots have exactly
+these at their edges.
+
+- Measure first. Open the source, note the pixel row where the unwanted band
+  ends, and use that number. The amounts are in **source** pixels, so they do
+  not change when you change `--widths`.
+- Crop **only** to remove such a band. Never crop to re-frame a product
+  screenshot, hide part of the interface, or make a feature look different from
+  how it really is.
+- A crop that would remove the whole image, or a negative or fractional amount,
+  is rejected.
+- The amounts are written into the manifest, and `images:verify` re-checks that
+  the output's aspect ratio matches the kept region, which proves nothing was
+  stretched. The original is untouched either way.
+- **Look at the result** before using it, and say in your report what you
+  removed and what the kept region shows.
+
 Rules of thumb:
 
 - **Do not upscale.** Widths wider than the source are dropped. If every width
@@ -91,7 +114,8 @@ npm run images:verify -- --report docs/evidence/image-optimization/before-after.
 
 Options: `--src` (repeatable), `--out` (inside `public/images/`, required),
 `--widths`, `--format webp|avif|jpeg`, `--quality 1-100`, `--lossless`,
-`--name <kebab-case>` (single source only), `--manifest`, `--dry-run`, `--force`.
+`--name <kebab-case>` (single source only), `--crop-top <px>`,
+`--crop-bottom <px>`, `--manifest`, `--dry-run`, `--force`.
 `images:verify` takes `--manifest` and `--report`.
 
 ## Outputs

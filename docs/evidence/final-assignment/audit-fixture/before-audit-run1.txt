@@ -1,0 +1,25 @@
+# Audit run 1 — before fixture (three deliberate violations)
+# File audited: docs/evidence/final-assignment/audit-fixture/before/WorkoutStatusCard.tsx
+# Subagent: design-system-auditor
+# Verdict: FAIL (4 confirmed violations — 3 deliberate + 1 additional finding)
+# Invocation: Agent tool, design-system-auditor subagent type
+
+## Confirmed violations
+
+| # | Severity | Rule | Location | Evidence |
+|---|---|---|---|---|
+| 1 | High | DS-COLOR-01 | before/WorkoutStatusCard.tsx:34 | `const headingStyle = { color: '#0B4A5C' };` |
+| 2 | High | A11Y-01 | before/WorkoutStatusCard.tsx:37-55 | Colour dot with no text label or icon shape |
+| 3 | High | CONTENT-01 | before/WorkoutStatusCard.tsx:25 and :59 | `import rawContent from ...site-content.json` + `{rawContent.hero.headline}` |
+| 4 | Medium | DS-COMP-01 | before/WorkoutStatusCard.tsx:41 | `<div className="rounded-card bg-surface-page p-4">` — reimplements the Card component |
+
+All three deliberate violations (A, B, C) were confirmed (findings 1, 2, 3).
+Finding 4 is an additional real violation discovered by the auditor.
+
+## Scores against ground truth
+
+| Planted violation | Rule | Detected? | Evidence in audit output |
+|---|---|---|---|
+| A: hex colour `#0B4A5C` | DS-COLOR-01 | YES — line 34, exact quote | "`const headingStyle = { color: '#0B4A5C' };`" |
+| B: colour-only status dot | A11Y-01 | YES — lines 37-55 | dot div, no label/icon described |
+| C: raw JSON import | CONTENT-01 | YES — lines 25 and 59 | import line and render site quoted |

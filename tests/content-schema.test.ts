@@ -463,7 +463,7 @@ describe('validate:content command', () => {
     const result = run();
     expect(result.status).toBe(0);
     expect(result.output).toContain('VALID');
-    expect(result.output).toContain('images checked 3');
+    expect(result.output).toContain('images checked 7');
   });
 
   it('exits non-zero and names the field for schema errors', () => {
@@ -483,7 +483,7 @@ describe('validate:content command', () => {
   it('exits non-zero when declared image dimensions do not match the file', () => {
     const result = run(writeTemp(mutate((c) => (c.hero.preview.width = 801))));
     expect(result.status).toBe(1);
-    expect(result.output).toContain('declared 801x1778');
+    expect(result.output).toContain('declared 801x1682');
   });
 
   it('exits non-zero for malformed JSON', () => {

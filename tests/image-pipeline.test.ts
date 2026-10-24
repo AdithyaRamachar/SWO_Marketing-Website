@@ -81,6 +81,7 @@ describe('optimize + verify (synthetic image in a temporary project)', () => {
       format: 'webp',
       quality: 80,
       lossless: false,
+      crop: { top: 0, bottom: 0 },
       dryRun: false,
       force: false,
       manifestPath: 'public/images/manifest.json',
@@ -108,6 +109,57 @@ describe('optimize + verify (synthetic image in a temporary project)', () => {
       expect(existsSync(path.join(root, output.path))).toBe(true);
       expect(output.publicPath).toBe(`/images/test/shot-${output.width}.webp`);
     }
+  });
+
+  // Cropping exists to remove browser chrome and personal headers from the
+  // supplied screenshots (Phase D). It must only ever drop edge rows.
+  it('crops rows off the top and bottom without changing the width or stretching', async () => {
+    const manifest = await optimizeImages(
+      options({ widths: [500], crop: { top: 100, bottom: 50 } }),
+    );
+    const entry = manifest.entries['references/shot.png']!;
+    const output = entry.outputs[0]!;
+
+    // Source 1000x500; keeping rows 100..450 leaves 1000x350, halved to 500x175.
+    expect(entry.crop).toEqual({ top: 100, bottom: 50 });
+    expect([output.width, output.height]).toEqual([500, 175]);
+    const meta = await sharp(path.join(root, output.path)).metadata();
+    expect([meta.width, meta.height]).toEqual([500, 175]);
+  });
+
+  it('omits crop from the manifest when nothing was cropped', async () => {
+    const manifest = await optimizeImages(options());
+    expect(manifest.entries['references/shot.png']!.crop).toBeUndefined();
+  });
+
+  it('verification passes for a cropped output and records the kept region', async () => {
+    await optimizeImages(options({ widths: [500], crop: { top: 100, bottom: 50 } }));
+    const report = await verifyManifest(root, 'public/images/manifest.json');
+    expect(report.failed).toBe(0);
+    const check = report.checks.find((c) => c.check === 'crop not stretched');
+    expect(check?.detail).toContain('kept 1000x350');
+  });
+
+  it('refuses a crop that would remove the whole image', async () => {
+    await expect(optimizeImages(options({ crop: { top: 400, bottom: 100 } }))).rejects.toThrow(
+      /crop removes the whole image/,
+    );
+  });
+
+  it('refuses a negative or fractional crop', async () => {
+    await expect(optimizeImages(options({ crop: { top: -10, bottom: 0 } }))).rejects.toThrow(
+      /--crop-top must be a whole number/,
+    );
+    await expect(optimizeImages(options({ crop: { top: 0, bottom: 1.5 } }))).rejects.toThrow(
+      /--crop-bottom must be a whole number/,
+    );
+  });
+
+  it('leaves the source byte-identical after a crop', async () => {
+    const source = path.join(root, 'references', 'shot.png');
+    const before = await sha256(source);
+    await optimizeImages(options({ widths: [500], crop: { top: 100, bottom: 50 } }));
+    expect(await sha256(source)).toBe(before);
   });
 
   it('leaves the source byte-identical', async () => {

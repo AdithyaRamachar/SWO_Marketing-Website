@@ -155,6 +155,7 @@ Tailwind's default type scale (`text-sm`, `text-xl` …) is removed on purpose, 
 | `--shadow-raised` | `0 4px 6px -1px rgb(16 24 39 / 0.08), 0 10px 24px -4px rgb(16 24 39 / 0.12)` | **proposed** | Raised surface. Not used by any component yet |
 | `--container-content` | `72rem` | kept | Page content width (`max-w-content`). v0.1 `content.max-width` |
 | `--container-prose` | `42rem` | **proposed** | Readable line length (`max-w-prose`) |
+| `--container-screenshot` | `22rem` | **proposed** | Cap for a portrait phone screenshot (`max-w-screenshot`). Added in Phase D; sources are 864px wide and up to 1920px tall |
 | `--breakpoint-sm` | `40rem` | **proposed** | v0.1 specified no breakpoints. Equals Tailwind's default |
 | `--breakpoint-md` | `48rem` | **proposed** | As above |
 | `--breakpoint-lg` | `64rem` | **proposed** | As above |

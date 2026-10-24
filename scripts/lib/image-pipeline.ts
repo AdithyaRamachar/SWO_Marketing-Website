@@ -11,6 +11,10 @@
  *   - an existing file we did not generate is never overwritten without --force
  *   - no upscaling: variants wider than the source are skipped
  *   - EXIF/GPS metadata is stripped from every output
+ *   - cropping only ever REMOVES edge rows (browser chrome, a status bar, a
+ *     personal profile header). It cannot scale, stretch or re-frame, so it
+ *     cannot misrepresent what a product screenshot shows. The amounts are
+ *     recorded in the manifest so any crop is auditable.
  *
  * The manifest holds only measurements taken from real files, never estimates.
  */
@@ -28,6 +32,37 @@ sharp.cache(false);
 
 export type OutputFormat = 'webp' | 'avif' | 'jpeg';
 
+/** Rows removed from the top and/or bottom of the source, in source pixels. */
+export interface Crop {
+  top: number;
+  bottom: number;
+}
+
+export const NO_CROP: Crop = { top: 0, bottom: 0 };
+
+export function isCropped(crop: Crop): boolean {
+  return crop.top > 0 || crop.bottom > 0;
+}
+
+/**
+ * The region kept after cropping. Throws rather than silently clamping: a crop
+ * that does not fit the image is an author mistake, not something to guess at.
+ */
+export function cropRegion(crop: Crop, source: { width: number; height: number }) {
+  for (const [edge, value] of Object.entries(crop)) {
+    if (!Number.isInteger(value) || value < 0) {
+      throw new Error(`--crop-${edge} must be a whole number of pixels >= 0, got ${value}`);
+    }
+  }
+  const height = source.height - crop.top - crop.bottom;
+  if (height <= 0) {
+    throw new Error(
+      `crop removes the whole image: top ${crop.top} + bottom ${crop.bottom} >= height ${source.height}`,
+    );
+  }
+  return { left: 0, top: crop.top, width: source.width, height };
+}
+
 export interface OptimizeOptions {
   /** Project root. Everything is resolved and confined relative to this. */
   root: string;
@@ -41,6 +76,8 @@ export interface OptimizeOptions {
   lossless: boolean;
   /** Output base name; only valid with exactly one source. */
   name?: string;
+  /** Rows to remove from the top/bottom of every source before resizing. */
+  crop: Crop;
   dryRun: boolean;
   force: boolean;
   manifestPath: string;
@@ -73,6 +110,8 @@ export interface ManifestEntry {
   source: SourceInfo;
   outputs: OutputInfo[];
   skippedWidths: number[];
+  /** Present only when rows were removed, so an untouched entry stays unchanged. */
+  crop?: Crop;
 }
 
 export interface Manifest {
@@ -226,6 +265,8 @@ export async function optimizeImages(options: OptimizeOptions): Promise<Manifest
     usedNames.set(base, sourceRel);
 
     const source = await readSourceInfo(options.root, sourceRel);
+    // Cropping only removes top/bottom rows, so the usable widths are unchanged.
+    const region = cropRegion(options.crop, source);
     const { usable, skipped } = chooseWidths(options.widths, source.width);
     const outputs: OutputInfo[] = [];
 
@@ -241,7 +282,11 @@ export async function optimizeImages(options: OptimizeOptions): Promise<Manifest
 
       // rotate() applies EXIF orientation so the saved pixels are upright;
       // metadata is dropped by default, which also removes any GPS data.
-      let pipeline = sharp(sourceAbs).rotate().resize({ width, withoutEnlargement: true });
+      // The crop runs on upright pixels, before the resize, so the amounts are
+      // in source pixels regardless of the variant width.
+      let pipeline = sharp(sourceAbs).rotate();
+      if (isCropped(options.crop)) pipeline = pipeline.extract(region);
+      pipeline = pipeline.resize({ width, withoutEnlargement: true });
       if (options.format === 'webp') {
         pipeline = pipeline.webp({
           quality: options.quality,
@@ -283,7 +328,12 @@ export async function optimizeImages(options: OptimizeOptions): Promise<Manifest
       });
     }
 
-    manifest.entries[source.path] = { source, outputs, skippedWidths: skipped };
+    manifest.entries[source.path] = {
+      source,
+      outputs,
+      skippedWidths: skipped,
+      ...(isCropped(options.crop) ? { crop: options.crop } : {}),
+    };
   }
 
   // Stable key order keeps the manifest diff-friendly and deterministic.
@@ -371,6 +421,18 @@ export async function verifyManifest(root: string, manifestPath: string): Promis
         'not upscaled',
         `output ${meta.width}px <= source ${entry.source.width}px`,
       );
+      // A crop must only have removed rows: the aspect ratio has to match the
+      // kept region, which proves nothing was stretched to hide the removal.
+      const kept = entry.crop ? cropRegion(entry.crop, entry.source) : null;
+      if (kept) {
+        const expected = Math.round(((meta.width ?? 0) * kept.height) / kept.width);
+        record(
+          Math.abs((meta.height ?? 0) - expected) <= 1,
+          output.path,
+          'crop not stretched',
+          `kept ${kept.width}x${kept.height} (top ${entry.crop?.top}, bottom ${entry.crop?.bottom}); expected height ~${expected}, actual ${meta.height}`,
+        );
+      }
       record(
         meta.exif === undefined,
         output.path,

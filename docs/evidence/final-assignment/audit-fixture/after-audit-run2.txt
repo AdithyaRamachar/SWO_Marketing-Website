@@ -1,0 +1,26 @@
+# Audit run 2 — after fixture (corrected)
+# File audited: docs/evidence/final-assignment/audit-fixture/after/WorkoutStatusCard.tsx
+# Subagent: design-system-auditor
+# Verdict: PASS (0 confirmed violations)
+
+## Status of three previously-planted violations
+
+### DS-COLOR-01 — CLEAN
+Before: `style={{ color: '#0B4A5C' }}` (line 34)
+After: `className="text-h3 font-semibold text-brand-primary"` (line 49)
+Auditor confirmed: "`text-brand-primary` maps to `--color-brand-primary`... CLEAN."
+
+### A11Y-01 — CLEAN
+Before: coloured dot with no text label or icon shape
+After: `<StatusBadge status={state} className="mt-2">{label}</StatusBadge>` (lines 52-54)
+Auditor confirmed: "StatusBadge renders a distinct icon shape, a screen-reader prefix, and a visible text label. Colour is no longer the sole channel. CLEAN."
+
+### CONTENT-01 — CLEAN
+Before: `import rawContent from '.../site-content.json'` + `{rawContent.hero.headline}`
+After: `content: SiteContent` typed prop (no JSON import anywhere)
+Auditor confirmed: "The component now accepts the validated SiteContent type as a typed prop. No JSON import exists anywhere in the file. CLEAN."
+
+## Uncertain observations (1)
+- DS-COMP-01: outer `div` uses `rounded-card` token directly rather than `<Card>`.
+  This is an uncertain observation (not a confirmed violation); the auditor noted it
+  may be a deliberate lighter wrapper. Does not invalidate the PASS verdict.

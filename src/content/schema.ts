@@ -21,7 +21,12 @@
 
 import { z } from 'zod';
 
-/** In-page anchor targets the eventual landing page will provide. */
+/**
+ * In-page anchor targets the landing page provides. Every anchor in the content
+ * is checked against this list, and `tests/content-render.test.tsx` checks that
+ * the rendered page really contains an element with each id, so a link can
+ * neither point at a section that does not exist nor silently stop working.
+ */
 export const SECTION_IDS = [
   'hero',
   'problem',
@@ -29,6 +34,7 @@ export const SECTION_IDS = [
   'status',
   'product',
   'science',
+  'audiences',
   'faq',
 ] as const;
 
@@ -200,8 +206,27 @@ const imageSrc = z
     'must be an optimised asset path such as "/images/product/exercise-card-800.webp"',
   );
 
+/**
+ * The pipeline names every output `<base>-<width>.<ext>`, so one variant's path
+ * can be rewritten into another's. Keeping the extra widths in the content (and
+ * checking each file exists in `npm run validate:content`) means a `srcSet` is
+ * data the validator can verify, not a filename guessed at render time.
+ */
+export function variantSrc(src: string, width: number): string {
+  return src.replace(/-\d+(\.[a-z0-9]+)$/i, `-${width}$1`);
+}
+
 const productImage = object({
   src: imageSrc,
+  /** Smaller generated widths of the same image, for a srcSet. */
+  responsiveWidths: list(
+    z
+      .number({ error: fieldError('a number') })
+      .int()
+      .positive(),
+    1,
+    3,
+  ).optional(),
   alt: text(20, 200).refine(
     (value) => !/^(image|picture|screenshot|photo)\s+of\b/i.test(value),
     'should describe what the image shows, not start with "image of" / "screenshot of"',
@@ -236,6 +261,17 @@ const hero = object({
   }
 });
 
+/**
+ * Header navigation. Kept in content, not in the header component, so the links
+ * go through the same anchor check as everything else.
+ */
+const nav = object({
+  /** Visible product name in the header. */
+  brand: text(2, 40),
+  links: list(link, 2, 6),
+  cta: cta,
+});
+
 const problem = object({
   heading: text(5, 80),
   body: text(30, 400),
@@ -245,6 +281,15 @@ const problem = object({
 const howItWorks = object({
   heading: text(5, 80),
   intro: text(20, 240).optional(),
+  /**
+   * The word shown above each step's title. These are reader-facing copy, not
+   * chrome, so they live in content rather than in the component (CONTENT-03).
+   */
+  stageLabels: object({
+    input: text(3, 40),
+    analysis: text(3, 40),
+    guidance: text(3, 40),
+  }),
   steps: list(
     object({
       id: id(),
@@ -294,6 +339,20 @@ const statuses = list(statusExplanation, 3, 3).superRefine((value, ctx) => {
   }
 });
 
+/**
+ * Heading copy for the two sections whose body is a list (`statuses`,
+ * `features`). Kept beside the list rather than inside it so each item stays a
+ * single, repeatable shape.
+ */
+const sectionIntro = object({ heading: text(5, 80), intro: text(20, 320) });
+
+const statusSection = sectionIntro.extend({
+  /** Prefix in front of each status's suggested action. Reader-facing copy. */
+  actionLabel: text(3, 40),
+  /** A real screenshot showing more than one state, as supporting evidence. */
+  image: productImage.optional(),
+});
+
 const feature = object({
   id: id(),
   heading: text(5, 80),
@@ -339,9 +398,43 @@ const framework = object({
 const methodology = object({
   heading: text(5, 80),
   intro: text(20, 320),
+  /** Label over the published-concept half of a framework card. */
+  conceptLabel: text(3, 40),
+  /** Label over the "what this product does with it" half. */
+  implementationLabel: text(3, 40),
+  /**
+   * Shown on a framework card that cites no source. This is an evidence
+   * statement, so it is validated content and cannot be dropped by editing a
+   * component.
+   */
+  unsourcedNotice: text(20, 240),
   frameworks: list(framework, 1, 4),
   disclaimer: text(30, 400),
 });
+
+/**
+ * Who the product is for. `points` are concrete things that audience can do,
+ * which keeps the section from drifting into invented customer stories: there
+ * is no field for a testimonial, a name or a number of users.
+ */
+const audiences = object({
+  heading: text(5, 80),
+  intro: text(20, 320),
+  groups: list(
+    object({
+      id: id(),
+      name: text(3, 60),
+      description: text(30, 320),
+      points: list(text(10, 160), 1, 4).optional(),
+    }),
+    2,
+    3,
+  ),
+  image: productImage.optional(),
+});
+
+/** Closing call to action. One destination only; it must be a real section. */
+const finalCta = object({ heading: text(5, 80), body: text(20, 280), cta: cta });
 
 const faqItem = object({ id: id(), question: text(10, 120), answer: text(20, 600) });
 
@@ -359,13 +452,19 @@ function duplicates(values: string[]): string[] {
 
 export const siteContentSchema = object({
   meta,
+  nav,
   hero,
   problem,
   howItWorks,
+  statusSection,
   statuses,
+  featureSection: sectionIntro,
   features: list(feature, 1, 6),
   methodology,
+  audiences,
+  faqSection: sectionIntro,
   faq: list(faqItem, 3, 10),
+  finalCta,
   footer,
 }).superRefine((content, ctx) => {
   const checkUnique = (path: Array<string | number>, values: string[], label: string) => {
@@ -403,13 +502,26 @@ export const siteContentSchema = object({
     content.faq.map((f) => f.question.toLowerCase()),
     'question',
   );
+  checkUnique(
+    ['audiences', 'groups'],
+    content.audiences.groups.map((g) => g.id),
+    'id',
+  );
+  checkUnique(
+    ['nav', 'links'],
+    content.nav.links.map((l) => l.href),
+    'destination',
+  );
 
   // In-page anchors must point at a section that will actually exist.
   const anchorTargets: Array<{ path: Array<string | number>; href: string }> = [
+    ...content.nav.links.map((l, i) => ({ path: ['nav', 'links', i, 'href'], href: l.href })),
+    { path: ['nav', 'cta', 'href'], href: content.nav.cta.href },
     { path: ['hero', 'primaryCta', 'href'], href: content.hero.primaryCta.href },
     ...(content.hero.secondaryCta
       ? [{ path: ['hero', 'secondaryCta', 'href'], href: content.hero.secondaryCta.href }]
       : []),
+    { path: ['finalCta', 'cta', 'href'], href: content.finalCta.cta.href },
     ...content.footer.linkGroups.flatMap((group, g) =>
       group.links.map((l, i) => ({
         path: ['footer', 'linkGroups', g, 'links', i, 'href'],
@@ -434,3 +546,8 @@ export const siteContentSchema = object({
 export type SiteContent = z.infer<typeof siteContentSchema>;
 export type ProductImage = z.infer<typeof productImage>;
 export type StatusExplanation = z.infer<typeof statusExplanation>;
+export type Feature = z.infer<typeof feature>;
+export type Framework = z.infer<typeof framework>;
+export type FaqItem = z.infer<typeof faqItem>;
+export type NavContent = z.infer<typeof nav>;
+export type Cta = z.infer<typeof cta>;
