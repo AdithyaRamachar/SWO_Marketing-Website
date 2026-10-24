@@ -34,7 +34,9 @@ function collectAllFixtures() {
   const requests = new Map<string, ReturnType<typeof collectFromLines>['requests'][number]>();
   let crossFileDuplicates = 0;
 
-  for (const file of readdirSync(FIXTURE_DIR).filter((f) => f.endsWith('.jsonl')).sort()) {
+  for (const file of readdirSync(FIXTURE_DIR)
+    .filter((f) => f.endsWith('.jsonl'))
+    .sort()) {
     const sessionId = path.basename(file, '.jsonl');
     const result = collectFromLines(readFixture(sessionId), sessionId, diagnostics);
     for (const r of result.requests) {
@@ -50,7 +52,10 @@ function collectAllFixtures() {
 
 describe('deduplication', () => {
   it('counts one request written as four identical lines exactly once', () => {
-    const { requests, diagnostics } = collectFromLines(readFixture('SYNTHETIC-aaa'), 'SYNTHETIC-aaa');
+    const { requests, diagnostics } = collectFromLines(
+      readFixture('SYNTHETIC-aaa'),
+      'SYNTHETIC-aaa',
+    );
 
     // Five assistant lines carry usage, but they are only two real requests.
     expect(diagnostics.usage_lines_seen).toBe(5);
@@ -123,7 +128,10 @@ describe('aggregation', () => {
 
 describe('missing fields', () => {
   it('records absent fields as unavailable rather than silently zero', () => {
-    const { requests, diagnostics } = collectFromLines(readFixture('SYNTHETIC-bbb'), 'SYNTHETIC-bbb');
+    const { requests, diagnostics } = collectFromLines(
+      readFixture('SYNTHETIC-bbb'),
+      'SYNTHETIC-bbb',
+    );
 
     // SYN-REQ-B0 has no usage object at all and is not a request record.
     expect(requests.map((r) => r.request_id).sort()).toEqual(['SYN-REQ-B1', 'SYN-REQ-B2']);
@@ -172,7 +180,9 @@ describe('malformed records', () => {
       '{"type":"assistant","sessionId":"SYNTHETIC-zzz","requestId":"SYN-REQ-Z1","uuid":"z1",' +
       '"message":{"id":"m","model":"synthetic-model-a","usage":{"input_tokens":1,"output_tokens":1,' +
       '"cache_creation_input_tokens":1,"cache_read_input_tokens":1}}}';
-    const conflicting = base.replace('"input_tokens":1', '"input_tokens":77').replace('"uuid":"z1"', '"uuid":"z2"');
+    const conflicting = base
+      .replace('"input_tokens":1', '"input_tokens":77')
+      .replace('"uuid":"z1"', '"uuid":"z2"');
     const { requests, diagnostics } = collectFromLines([base, conflicting], 'SYNTHETIC-zzz');
     expect(requests).toHaveLength(1);
     expect(diagnostics.conflicting_duplicates).toEqual(['SYN-REQ-Z1']);
@@ -276,8 +286,8 @@ describe('collector end to end', () => {
     runCollector(out);
 
     const ledger = JSON.parse(readFileSync(path.join(out, 'usage-ledger.json'), 'utf8'));
-    expect(ledger.project_summary.totals.total_tokens).toBe(11888);
-    expect(ledger.project_summary.totals.requests).toBe(7);
+    expect(ledger.project_summary.totals.total_tokens).toBe(12018);
+    expect(ledger.project_summary.totals.requests).toBe(10);
     // Five transcript files, so five sessions. SYNTHETIC-eee is a fork replay
     // that contributed no NEW requests: it is still a real session, and it is
     // listed with zero requests rather than being hidden or double-counted.
@@ -287,17 +297,17 @@ describe('collector end to end', () => {
     );
     expect(forkSession.totals.requests).toBe(0);
     expect(forkSession.totals.total_tokens).toBe(0);
-    expect(ledger.diagnostics.duplicate_lines_dropped).toBe(3);
+    expect(ledger.diagnostics.duplicate_lines_dropped).toBe(4);
     expect(ledger.diagnostics.cross_file_duplicate_requests).toBe(1);
     expect(ledger.diagnostics.lines_malformed).toBe(3);
     expect(ledger.diagnostics.multi_iteration_records).toEqual([]);
 
     // One data row per deduplicated request, plus the header.
     const csv = readFileSync(path.join(out, 'usage-ledger.csv'), 'utf8').trimEnd().split('\n');
-    expect(csv).toHaveLength(8);
+    expect(csv).toHaveLength(11);
 
     const summary = readFileSync(path.join(out, 'usage-summary.md'), 'utf8');
-    expect(summary).toContain('11,888');
+    expect(summary).toContain('12,018');
   });
 
   it('is idempotent: a second run over unchanged input is byte-identical', () => {
@@ -331,5 +341,109 @@ describe('collector end to end', () => {
     expect(failed).toBe(true);
     expect(stderr).toContain('No .jsonl transcripts found');
     expect(readdirSync(out)).toEqual([]);
+  });
+});
+
+// The collector's ledger is checked field by field; typing all of it adds nothing.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Ledger = any;
+
+describe('subagent transcripts (<session>/subagents/agent-*.jsonl)', () => {
+  function collect(): Ledger {
+    const out = mkdtempSync(path.join(tmpdir(), 'swo-track-'));
+    execFileSync(
+      process.execPath,
+      [
+        path.join('scripts', 'track-usage.ts'),
+        '--dir',
+        FIXTURE_DIR,
+        '--out',
+        out,
+        '--session-id',
+        'SYNTHETIC-none',
+        '--quiet',
+      ],
+      { cwd: REPO_ROOT, encoding: 'utf8' },
+    );
+    return JSON.parse(readFileSync(path.join(out, 'usage-ledger.json'), 'utf8'));
+  }
+
+  it('reads subagent files and lists them with their kind', () => {
+    const ledger = collect();
+    const kinds = ledger.source.files.map((f: { kind: string }) => f.kind);
+    expect(kinds.filter((k: string) => k === 'subagent')).toHaveLength(2);
+    expect(kinds.filter((k: string) => k === 'session')).toHaveLength(5);
+    expect(ledger.source.files.map((f: { file: string }) => f.file)).toContain(
+      'SYNTHETIC-ddd/subagents/agent-synthetic1.jsonl',
+    );
+  });
+
+  it('counts each subagent request once, even when written as several lines', () => {
+    const ledger = collect();
+    const s1 = ledger.requests.filter((r: { request_id: string }) => r.request_id === 'SYN-REQ-S1');
+    expect(s1).toHaveLength(1);
+    expect(s1[0].total_tokens).toBe(100);
+  });
+
+  it('attributes subagent usage to the PARENT session without creating a new session', () => {
+    const ledger = collect();
+    expect(ledger.project_summary.sessions).toBe(5);
+    const parent = ledger.sessions.find(
+      (s: { session_id: string }) => s.session_id === 'SYNTHETIC-ddd',
+    );
+    expect(parent.totals.requests).toBe(5); // D1, D2, S1, S2, S3
+    expect(parent.totals.total_tokens).toBe(10890);
+    expect(parent.main_thread.total_tokens).toBe(10500);
+    expect(parent.sidechain.total_tokens).toBe(390);
+    expect(parent.sidechain.requests).toBe(4);
+  });
+
+  it('records agent id and type, and reports unknown when there is no meta file', () => {
+    const ledger = collect();
+    const byId = (id: string) =>
+      ledger.requests.find((r: { request_id: string }) => r.request_id === id);
+    expect(byId('SYN-REQ-S1')).toMatchObject({
+      is_sidechain: true,
+      agent_id: 'synthetic1',
+      agent_type: 'synthetic-auditor',
+    });
+    expect(byId('SYN-REQ-S3')).toMatchObject({
+      is_sidechain: true,
+      agent_id: 'synthetic2',
+      agent_type: null,
+    });
+    // A main-thread request is not attributed to any agent.
+    expect(byId('SYN-REQ-D1')).toMatchObject({
+      is_sidechain: false,
+      agent_id: null,
+      agent_type: null,
+    });
+  });
+
+  it('reports subagent usage by type in the summary', () => {
+    const out = mkdtempSync(path.join(tmpdir(), 'swo-track-'));
+    execFileSync(
+      process.execPath,
+      [path.join('scripts', 'track-usage.ts'), '--dir', FIXTURE_DIR, '--out', out, '--quiet'],
+      { cwd: REPO_ROOT, encoding: 'utf8' },
+    );
+    const summary = readFileSync(path.join(out, 'usage-summary.md'), 'utf8');
+    expect(summary).toContain('## Subagents by type');
+    expect(summary).toContain('`synthetic-auditor`');
+    expect(summary).toContain('`unknown`');
+  });
+
+  it('keeps the grand total equal to the sum of main-thread and sidechain', () => {
+    const { project_summary: p } = collect();
+    expect(p.main_thread.total_tokens + p.sidechain.total_tokens).toBe(p.totals.total_tokens);
+    expect(p.totals.total_tokens).toBe(12018);
+  });
+
+  it('does not let a subagent file change whether a session counts as running', () => {
+    const ledger = collect();
+    // With a different live-session id and old fixture mtimes the sessions are
+    // judged by their own transcript only.
+    const ids = ledger.sessions.map((s: { session_id: string }) => s.session_id);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });

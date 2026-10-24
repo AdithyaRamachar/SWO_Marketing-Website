@@ -1,105 +1,98 @@
 # SWO Website — Claude Code Project Context
 
 ## Mission
-Build a responsive, product-first public marketing landing page for Smart Workout Optimizer (SWO) in this standalone repository.
+Build a responsive, product-first public marketing landing page for Smart Workout Optimizer (SWO) in this standalone repository. This is also an evidence-backed assignment: each reusable tool must be **exercised**, not just created.
 
-## Before coding
-1. Read `README.md` and every relevant file in `docs/`.
-2. Inspect the supplied images in `references/`; do not substitute unrelated/generated screenshots for authentic SWO UI.
-3. Check the current project files and toolchain before choosing or changing the stack.
-4. Keep work limited to the frontend/design system, structured content, subagent creation, and custom skill creation.
-5. Token tracking is implemented and verified — see **Token tracking** below. Do not claim a token figure without re-running the collector.
+## Read first, every session
+1. This file, then `README.md` and the docs below as relevant.
+2. Run `git status` and `git branch --show-current`. Work happens on **`dev`**; `main` is the reviewed baseline (remote `origin` = GitHub `SWO_Marketing-Website`). Do not merge without being asked.
+3. Do not claim a test, check, skill or subagent works unless you ran it and saw the result.
+4. Ask before expanding scope or adding dependencies that materially change the project.
 
-## Current state (Phase B complete)
-Phases run in order, each gated on user approval:
+## Product and audience
+SWO is a wearable-free, mobile-first training decision-support app. It uses sleep quality, fatigue/stiffness and workout performance history with training frameworks to give exercise-level **Green / Amber / Red** guidance. Public name: Smart Workout Optimizer (SWO). "Training Decision Validator" is an internal assignment label, **not** the public brand. Primary audience: individual gym-goers and serious lifters (coaches are secondary, do not dilute the message).
 
-| Phase | Status |
-|---|---|
-| A — inspect and plan | Complete |
-| B — toolchain bootstrap + token/session tracking | **Complete and verified** |
-| C — design tokens, component specs, content schema, subagent, skill | Not started (awaiting approval) |
-| D — landing-page implementation | Not started (requires a separate instruction) |
+## Scope boundaries and claims
+- In scope: frontend, design system, structured content, one subagent, one skill, evidence. **Out of scope:** database, auth, backend, deployment, AI evaluation.
+- Never invent testimonials, user counts, adoption metrics, scientific validation, clinical/medical claims, guaranteed outcomes, citations, or support channels/contact links.
+- Distinguish sports-science concepts (ACWR, fatigue/recovery, progressive overload) from SWO's own implementation. Do not imply mockups are a live connected product.
+- Status is never colour alone: always a text label **and** a distinct icon shape.
+- Do not copy competitor branding, wording or assets. `references/external-templates/` are layout lessons only, never site assets.
+- Never delete, rename, overwrite or modify anything in `references/`. Do not touch the separate SWO product repo or its Claude data folder.
 
-No application code, design tokens or page sections exist yet. `src/` has not
-been created. Do not start Phase C or D work without explicit instruction.
+## Tech stack and commands
+React 19, TypeScript, Vite 8, Tailwind CSS v4 (CSS-first), Zod 4, lucide-react, Vitest + React Testing Library, ESLint 9 (+jsx-a11y), Prettier, Sharp. Node 26 runs `scripts/*.ts` natively (no loader); use explicit `.ts` import extensions in anything Node also runs.
 
-## Toolchain (verified on this machine)
-Windows 11 · Node v26.2.0 · npm 12.2.1 · Git 2.55 · Claude Code 2.1.153.
-Node runs TypeScript natively, so `scripts/*.ts` execute without a loader.
-
-Installed so far: `typescript`, `vitest`, `@types/node`. Phase C adds React,
-Vite, Tailwind, Zod, lucide-react and sharp. Ask before adding anything else.
-
-## Commands
 ```bash
-npm run track:usage   # collect Claude Code token/session usage -> tracking/
-npm test              # Vitest suite (17 tests, synthetic fixtures)
-npm run typecheck     # tsc --noEmit
+npm run dev               # Vite; pages: /  /dev/showcase.html  /dev/content-demo.html
+npm run check             # THE quality gate: typecheck, lint, format, tokens, content, tests, build
+npm test                  # Vitest
+npm run lint | typecheck | format:check
+npm run check:tokens      # WCAG contrast of every token pair (add -- --markdown for a table)
+npm run validate:content  # schema + image existence/dimensions; build runs it first
+npm run images:optimize -- --src <ref> --out public/images/<group> [--dry-run]
+npm run images:verify [-- --report <path>]
+npm run capture -- --url <url> --name <stem> [--widths 1280,768,390]   # screenshots + overflow measurement
+npm run track:usage       # token/session ledger -> tracking/
 ```
+Caution: port 4173 may be in use by another project on this machine. Use `--port` and `--strictPort`, and confirm the page `<title>` before trusting a screenshot.
 
-## Token tracking
-`scripts/track-usage.ts` parses Claude Code's local JSONL session transcripts in
-`~/.claude/projects/e--Projects-Airtribe-PM-SWO-Project` and writes
-`tracking/usage-ledger.json`, `tracking/usage-ledger.csv` and
-`tracking/usage-summary.md`. Parsing logic lives in `scripts/lib/usage-parse.ts`.
+## Design tokens (single source of truth)
+`src/styles/tokens.css` only. Raw `--palette-*` values feed semantic `--color-*`, `--radius-*`, `--text-*`, etc., which Tailwind reads through `@theme`. Tailwind's default colours, type scale, radii and shadows are **removed on purpose**, so off-system classes do not compile. **No second token file in TypeScript.** Rules and values: `docs/style-guide.md` (every token documented, with WCAG evidence and which v0.1 values were adjusted). Tests fail if the guide and `tokens.css` drift. Components use semantic tokens only: no hex, no palette tokens, only spacing steps 1/2/3/4/6/8/12/16 (lint and tests enforce).
 
-Essentials before touching or quoting it:
+## Content: validate, then render
+Copy lives in `src/content/site-content.json`, validated by `src/content/schema.ts` (Zod) through `validateSiteContent()` in `src/content/validate.ts`. Components take the validated `SiteContent` type; **never import the JSON and render it directly.** Invalid content is rejected with the exact field path, never partly rendered. The schema rejects unknown fields, placeholder links, unresolved anchors, and affirmative unsupported claims (heuristic, **not** editorial review). Details: `docs/content-model.md`.
 
-- **Deduplicate by `requestId`.** One API response is written as several
-  assistant lines sharing one identical `usage` object. Summing lines inflated
-  real totals ~2.2×. This is the collector's core correctness property.
-- `total_tokens = input + output + cache_creation + cache_read`. These four are
-  disjoint as reported, so cache reads are counted once.
-- `thinking_tokens` is a **subset** of `output_tokens`; never add it.
-- Nothing is ever estimated from characters or words. Missing fields are `null`,
-  never `0`.
-- Read-only on `~/.claude`; writes only to `tracking/`. Stores no prompt text,
-  code or credentials.
-- Known gaps: subscription-level `/usage` is not machine-readable; other project
-  directories are out of scope; session end times are inferred, not reported.
+## Reusable components (`src/components/`)
+`Button`/`ButtonLink`, `Card`, `SectionContainer`, `SectionHeading`, `StatusBadge`, `FormField`/`TextInput`/`Select`. APIs: `docs/component-reference.md`. Not built yet (Phase D, only if needed): hero, feature section, FAQ, footer, recommendation panel, screenshot component.
 
-Full field definitions, limitations and verification evidence:
-[docs/token-tracking.md](docs/token-tracking.md). Uncollectable sessions go in
-[tracking/manual-sessions.md](tracking/manual-sessions.md) — never hand-edit the
-generated ledger, and never invent historical usage.
+## Claude Code tooling
+| Tool | Location | Use |
+|---|---|---|
+| Subagent `design-system-auditor` | `.claude/agents/design-system-auditor.md` | Read-only audit of frontend files or a diff; cites rule IDs from `docs/audit-rules.md` and `file:line`. Invoke: "Use the design-system-auditor subagent to audit `<paths>`". Rule catalogue: `docs/audit-rules.md` |
+| Skill `optimize-web-images` | `.claude/skills/optimize-web-images/SKILL.md` | Resize/convert originals from `references/` into `public/images/` with a measured manifest. Invoke: `/optimize-web-images <task>` |
 
-## Known documentation defect (unresolved, for Phase C)
-`docs/asset-manifest.json` and `docs/reference-catalogue.md` list
-`references/photography/landing-page-photo.jpg` and `workout-02.jpg`, but those
-files are `.png` on disk. The documentation is wrong, not the assets. Fix the
-docs in Phase C; never rename or overwrite a reference asset.
+**Both are registered only when a session starts.** A tool created or edited mid-session is not visible to that session. To run one from the authoring session, launch a fresh process, e.g. `claude -p "/optimize-web-images ..." --allowedTools ...`. Permission allowlists need both `Bash(...)` and `PowerShell(...)` forms, and `npm run images:optimize *` (a space before `*`), not `images:*`. Exact commands that worked: `docs/evidence/image-optimization/README.md` and `docs/evidence/subagent-audit/README.md`. The auditor is an LLM and **not deterministic**; treat it as a review layer on top of lint and tests, not a replacement.
 
-## Product facts
-SWO is a wearable-free, mobile-first training decision-support app. It uses sleep quality, fatigue/stiffness, and workout performance history with training frameworks to provide exercise-level Green / Amber / Red guidance. Public name: Smart Workout Optimizer (SWO). “Training Decision Validator” is an internal project/assignment label, not the public brand.
+## Testing and quality gates
+`npm run check` must pass before any commit that changes code. Nothing may be weakened to get green: do not delete or loosen a test, add `eslint-disable` to dodge a real finding, or lower a contrast threshold. Tests cover tokens, component behaviour and accessibility, content schema and rendering, image pipeline, tooling-file structure, and the tracker. Linting bans raw hex colours in `src/` (custom rule `swo/no-raw-colour`) and palette tokens in components.
 
-## Design direction
-- Product-first hero on a light/neutral background.
-- Ink/navy text, restrained teal accent, cool neutral surfaces.
-- Use real supplied SWO screenshots as product previews.
-- Use personal gym photography selectively in supporting sections.
-- Use Green / Amber / Red only as semantic decision states, not decoration.
-- Keep layouts spacious and alternate text/image sections.
-- Design mobile-first and maintain readable contrast and keyboard accessibility.
-- Do not copy competitor branding, wording, or assets into the implementation.
+## Token and session tracking
+`npm run track:usage` reads Claude Code's local transcripts for **this project only** and writes `tracking/usage-ledger.json`, `.csv` and `usage-summary.md`. Re-run before quoting any figure; totals grow while a session is active. Essentials:
+- Deduplicate by `requestId` (one API response is written as several lines).
+- `total = input + output + cache_creation + cache_read`; `thinking_tokens` is a subset of output; nothing is estimated; missing fields are `null`.
+- Subagent usage is in `<session>/subagents/agent-*.jsonl`. **Collector 1.0.0 missed it** (found in Phase C, fixed in 1.1.0); any 1.0.0 ledger generated after a subagent ran is under-counted.
+- The session count includes child `claude -p` runs launched for demonstrations and helper sessions. See `docs/phase-c-report.md` for the interactive vs child split.
+- Known gaps: subscription-level `/usage` is not machine-readable; "running" vs "ended" is inferred (15 min staleness); session end = last request.
+Details: `docs/token-tracking.md`. Uncollectable sessions: `tracking/manual-sessions.md`. Never hand-edit the ledger or invent usage.
 
-## Content and claims
-- Primary audience: individual gym-goers and serious lifters.
-- Explain recommendation rationale alongside status.
-- Distinguish sports-science concepts from SWO's own implementation.
-- Do not invent testimonials, adoption metrics, scientific validation, medical claims, or support channels.
-- Do not imply the marketing mockups are a live connected product.
+## Evidence
+Index and per-item write-ups: `docs/evidence/README.md`. Phase summary: `docs/phase-c-report.md`. Traceability: `docs/traceability-matrix.md`. Mark nothing "verified" without the command and its real output.
 
-## Acceptance tests
-- Design tokens trace to explicit rules in `docs/style-guide.md` and a reference in `docs/reference-catalogue.md`.
-- Structured content validates against a declared schema/rule set and renders correctly.
-- The design-system subagent catches three planted violations and cites exact rules.
-- A fresh Claude Code session understands the project from this file without foundational re-explanation.
-- A custom skill is applied to a real task with before/after evidence.
-- Keep a clear record of decisions, validation results, and evidence.
-- Token/session totals come from `npm run track:usage`; re-run it before quoting a figure rather than reusing a number from a document.
+## Current status (end of Phase C)
+| Area | Status |
+|---|---|
+| Token/session tracker | **Done**, extended in Phase C (subagents). Phase B tests preserved |
+| Design tokens, style guide, contrast checks | **Done**, tested. Some values still *proposed* (breakpoints, shadows, focus ring, Inter not loaded); see style guide |
+| UI primitives, showcase page | **Done**, tested; not yet used by a real page |
+| Structured content + validation + demo render | **Done**, tested. Sample copy is draft: `swoImplementation` statements need owner confirmation |
+| `design-system-auditor` subagent | **Done and demonstrated** (3/3 planted violations found on a blind fixture; corrected fixture passes). Over-reports once; format not fully reliable |
+| `optimize-web-images` skill | **Done and demonstrated** (3 attempts, 2 permission defects found and fixed; 6 outputs, 46/46 checks) |
+| Fresh-session handoff test | **Partly done.** An automated fresh `claude -p` process answered 9/9 questions from this file alone (`docs/evidence/handoff/`). The interactive test the assignment describes still needs the user |
+| Landing page sections (hero, FAQ, etc.), real-site screenshots | **Not started (Phase D)** |
+| Traceability matrix | Mostly **partial**; only the form-control and token-sync rows are fully verified |
+
+**Next recommended step:** the user reviews Phase C, runs the interactive fresh-session handoff test (script in `docs/evidence/handoff/README.md`), then gives a separate Phase D instruction. Open decisions for Phase D: load Inter or not; confirm `swoImplementation` copy; crop/replace screenshots that show a third-party dev URL and a personal profile photo; whether `workout-02` (visible sparkle mark, third-party logos) suits "personal photography".
+
+## Acceptance tests (assignment)
+- Design tokens trace to explicit rules in `docs/style-guide.md` and a reference in `docs/reference-catalogue.md`: **demonstrated** for `StatusBadge` (green) in the traceability matrix.
+- Structured content validates against a declared schema and renders: **demonstrated** (tests + `dev/content-demo.html`).
+- The design-system subagent catches planted violations and cites exact rules: **demonstrated** on a fixture with three planted violations (the brief's literal "real component" wording was met with a realistic fixture file, not a production component).
+- A fresh session understands the project from this file: **automated analogue passed 9/9**; the interactive user-run test is still pending.
+- A custom skill is applied to a real task with before/after evidence: **demonstrated**.
+- Token and session totals are recorded with source and limitations: **recorded**; final figures only settle when the sessions end.
 
 ## Working principles
-- Prefer small, reusable components over duplicated page-specific styles.
-- Avoid arbitrary one-off values where a documented token exists.
-- Do not claim tests passed unless they were actually run and results observed.
-- Ask before expanding scope or introducing dependencies that materially change the project.
+- Small reusable components over page-specific styles; no arbitrary one-off values where a token exists.
+- Mobile-first, readable contrast, keyboard accessible. Respect `prefers-reduced-motion`.
+- Keep evidence honest: separate completed from planned, and record limits and defects found, not just successes.

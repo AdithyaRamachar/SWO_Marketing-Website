@@ -6,14 +6,14 @@
 
 ## Project totals
 
-- **Claude Code sessions:** 2 (1 running)
-- **API requests (deduplicated):** 55
-- **Input tokens:** 110
-- **Output tokens:** 70,741
-  - of which thinking tokens: 10,936 (subset, not added to the total)
-- **Cache-creation input tokens:** 126,252
-- **Cache-read input tokens:** 6,312,472
-- **Total tokens:** 6,509,575
+- **Claude Code sessions:** 13 (2 running)
+- **API requests (deduplicated):** 352
+- **Input tokens:** 614
+- **Output tokens:** 413,071
+  - of which thinking tokens: 96,827 (subset, not added to the total)
+- **Cache-creation input tokens:** 1,259,656
+- **Cache-read input tokens:** 68,985,389
+- **Total tokens:** 70,658,730
 
 Formula: `total_tokens = input_tokens + output_tokens + cache_creation_input_tokens + cache_read_input_tokens`
 Deduplication key: `requestId (fallback: message.id, then uuid)`
@@ -22,32 +22,53 @@ Deduplication key: `requestId (fallback: message.id, then uuid)`
 
 | Scope | Requests | Input | Output | Cache create | Cache read | Total |
 |---|---:|---:|---:|---:|---:|---:|
-| Main thread | 55 | 110 | 70,741 | 126,252 | 6,312,472 | 6,509,575 |
-| Subagents (sidechain) | 0 | 0 | 0 | 0 | 0 | 0 |
+| Main thread | 278 | 528 | 397,406 | 1,092,183 | 66,938,135 | 68,428,252 |
+| Subagents (sidechain) | 74 | 86 | 15,665 | 167,473 | 2,047,254 | 2,230,478 |
+
+## Subagents by type
+
+Subagent work is attributed to its parent session and is included in the totals above.
+
+| Agent type | Agents | Requests | Output | Total |
+|---|---:|---:|---:|---:|
+| `design-system-auditor` | 6 | 74 | 15,665 | 2,230,478 |
 
 ## By model
 
 | Model | Requests | Input | Output | Cache create | Cache read | Total |
 |---|---:|---:|---:|---:|---:|---:|
-| `claude-opus-5` | 55 | 110 | 70,741 | 126,252 | 6,312,472 | 6,509,575 |
+| `claude-opus-5` | 59 | 118 | 73,677 | 264,114 | 6,818,596 | 7,156,505 |
+| `claude-sonnet-4-6` | 130 | 162 | 52,991 | 376,770 | 3,822,825 | 4,252,748 |
+| `claude-sonnet-5-5` | 163 | 334 | 286,403 | 618,772 | 58,343,968 | 59,249,477 |
 
 ## Sessions
 
 | Session | Status | Start | Last request | Models | Requests | Total tokens |
 |---|---|---|---|---|---:|---:|
-| `c5817597-872c-4e3a-85f6-c7bab4886bbc` | running | 2026-10-24T05:23:31.765Z | (running) | `claude-opus-5` | 55 | 6,509,575 |
+| `21ea3623-ea5f-4492-aefb-050cd13c9a62` | ended | 2026-10-24T06:38:00.944Z | 2026-10-24T06:39:52.248Z | `claude-sonnet-4-6` | 7 | 164,566 |
+| `3ce993b4-2106-4142-b5f1-9b1a19fc2fc8` | ended | 2026-10-24T06:32:09.131Z | 2026-10-24T06:33:45.806Z | `claude-sonnet-4-6` | 16 | 448,901 |
+| `58bda065-5ec2-4ebf-85ec-e4fe9a39afa8` | ended | 2026-10-24T06:10:09.111Z | 2026-10-24T06:11:15.755Z | `claude-sonnet-4-6` | 11 | 368,374 |
+| `66cb4f8d-9723-4e77-9b2d-03315ad9396e` | ended | 2026-10-24T06:42:09.535Z | 2026-10-24T06:43:20.641Z | `claude-sonnet-4-6` | 13 | 349,479 |
+| `76c09373-9674-4a3b-8ac5-ea4a78c2951a` | ended | 2026-10-24T06:30:19.442Z | 2026-10-24T06:31:35.309Z | `claude-sonnet-4-6` | 7 | 162,035 |
+| `7cc39af0-e485-446f-88e2-e35d065794d2` | ended | 2026-10-24T06:08:12.874Z | 2026-10-24T06:09:18.771Z | `claude-sonnet-4-6` | 13 | 466,161 |
+| `861d0671-aa5d-4ed2-9c8b-f0d27203a5f6` | running | 2026-10-24T06:54:22.036Z | (running) | `claude-sonnet-4-6` | 1 | 26,349 |
+| `a6067e33-aaba-42a9-91fb-e080ed21be51` | ended | 2026-10-24T06:34:11.298Z | 2026-10-24T06:37:27.211Z | `claude-sonnet-4-6` | 34 | 1,199,155 |
+| `c5817597-872c-4e3a-85f6-c7bab4886bbc` | ended | 2026-10-24T05:23:31.765Z | 2026-10-24T05:53:59.403Z | `claude-opus-5`, `claude-sonnet-5-5` | 66 | 8,196,703 |
 | `cdcd3731-bb11-48de-beb1-ae1373f11dc2` | ended | — | — | — | 0 | 0 |
+| `da805e33-61e3-4441-ac75-f54f59f0c81f` | ended | 2026-10-24T06:11:47.141Z | 2026-10-24T06:14:58.693Z | `claude-sonnet-4-6` | 19 | 843,197 |
+| `f5971897-58eb-4f2c-9607-01097bcb8bf7` | ended | 2026-10-24T06:40:30.804Z | 2026-10-24T06:41:51.159Z | `claude-sonnet-4-6` | 9 | 224,531 |
+| `fa729ae8-da04-410f-aca6-6b476cecd11d` | running | 2026-10-24T05:56:07.976Z | (running) | `claude-sonnet-5-5` | 156 | 58,209,279 |
 
 ## Collection diagnostics
 
-- Transcript lines read: 528
-- Lines carrying a usage object: 121
-- **Duplicate lines dropped: 66** — same request written once per content block; counting lines instead of requests would have inflated every total.
-- Duplicate requests across files (forks/resumes): 0
+- Transcript lines read: 2,980
+- Lines carrying a usage object: 1,004
+- **Duplicate lines dropped: 588** — same request written once per content block; counting lines instead of requests would have inflated every total.
+- Duplicate requests across files (forks/resumes): 64
 - Malformed lines skipped: 0
-- Lines without usage (user turns, tool records, metadata): 406
+- Lines without usage (user turns, tool records, metadata): 1,974
 - Fork context references: 0
-- Conflicting duplicates: none
+- Conflicting duplicates: req_011CgLbqcAownYUYkgPW9pTZ, req_011CgLbqmeaD3EeZhdJHKnEJ, req_011CgLbqxk4KteTey1g3LsQ1, req_011CgLbrAz2469drSWFzzTHb, req_011CgLbPgwZgb4ZvAKdECovq, req_011CgLbPsgyfgVu6AMQ9hUQQ, req_011CgLbQ4Q9jR41291MEWvKu, req_011CgLbQFXeGMb5JVgJ9FLbj, req_011CgLbQUUFxwDoqNXhDrMRG, req_011CgLbR62fkB6FbX6uUZjA8, req_011CgLbRTEcUmezVwXARAC9X, req_011CgLbRiyB1LQDcfY9tXJXn, req_011CgLbS226Z1DnBBtJhojbF, req_011CgLbSKY3B9tUrttLDA8jb, req_011CgLbSkcQkyZ6BFAZacHxV, req_011CgLbTEYC24MWpsgW9Xdzb, req_011CgLc9w2crnD2vNRqawQGG, req_011CgLcA82REBiUszEPm3zoL, req_011CgLcALocgNfa97amZwshG, req_011CgLcAZfm9RE8WFecXdEGW, req_011CgLcAoDc5BSdfm5mxePx2, req_011CgLcBMbGDNanishKRCio6, req_011CgLcBg7VgByT6ZssJVbsP, req_011CgLcCKDRiVZXiHgeRxg2W, req_011CgLbFaoFUnCQjqhhKGxGR, req_011CgLbFkNENcybGTw8sSqBd, req_011CgLbFw88dpXpbBxwm2Rpq, req_011CgLbG8w2zL3PzpVnK9rE2, req_011CgLbYguqVGwYx4AeBxMy7, req_011CgLbYstPrTmF2ms2f3oTP, req_011CgLbZ8TjUfZF5DwnKqWh1, req_011CgLbZLeiUKFJhKNCLHh1j, req_011CgLbZd3T34JbUF4q5dPsY, req_011CgLbZm97gVpy467ts5M9e, req_011CgLbZuWeJzmZtigUGLnJd, req_011CgLba4ZMf3C57e1faxzbv, req_011CgLba4ZMf3C57e1faxzbv, req_011CgLbaRc8ysCSdUvrrWzig, req_011CgLbapDBdTGQX2DEB9ZK9, req_011CgLbbANt23v1imPWLt13q, req_011CgLbbWMBLEhmumzYXA8vd, req_011CgLbboJtQ7gfLYqWqbPm9, req_011CgLbcVTsj8z1EVrUkRwS2, req_011CgLbckxmziZf45N3Eg6v8, req_011CgLbd3DpmkBg6fJNczArx, req_011CgLbdLea8u6hECjPhXhPX, req_011CgLbdgzgiAGyjXyahzZZm, req_011CgLbe8zNbbshxqhFe8Vh1, req_011CgLbe8zNbbshxqhFe8Vh1, req_011CgLbfTRvLJjB5nxbA7pAV, req_011CgLbfoccTiAXtbPToSX6n, req_011CgLbgUtFhCkvJT8CS4uUw, req_011CgLbgvA2pPF7Zh9CTG7DL, req_011CgLbhKawc6cGAYQAqXLdV, req_011CgLbhwfbozag8rHXcfnAB, req_011CgLc2es5gZzQQa5MKNXkX, req_011CgLc2qJtPqgKYx6Qj1UUS, req_011CgLc31dkJxXM7aLGwCAsU, req_011CgLc3Dc5qU9ivZhpQAYir, req_011CgLc3T6SPxw4GWD4HSGsm, req_011CgLc3jxTDwJh4B74S6QMz
 - Multi-iteration records: none (top-level usage is authoritative)
 - Requests with a missing component field: 0
 
@@ -55,6 +76,7 @@ Deduplication key: `requestId (fallback: message.id, then uuid)`
 
 Independent rollup Claude Code wrote itself. Partial by nature; for comparison only.
 
+- `c5817597-872c-4e3a-85f6-c7bab4886bbc`: reported cost USD 8.398361200000002, models: claude-haiku-5-5, claude-opus-5, claude-sonnet-5-5
 - `cdcd3731-bb11-48de-beb1-ae1373f11dc2`: reported cost USD 0.0001259, models: claude-haiku-5-5
 
 ## Sessions with usage only in cost-state
@@ -67,12 +89,13 @@ reported here. **It is not included in the project totals above.**
 |---|---|---:|---:|---:|---:|---:|
 | `cdcd3731-bb11-48de-beb1-ae1373f11dc2` | `claude-haiku-5-5` | 1,174 | 17 | 0 | 0 | 1,191 |
 
-Supplementary total (separate source): **1,191 tokens**. Combined with the transcript-derived total that is 6,510,766, but the two figures come from different sources and should always be quoted with their source stated.
+Supplementary total (separate source): **1,191 tokens**. Combined with the transcript-derived total that is 70,659,921, but the two figures come from different sources and should always be quoted with their source stated.
 
 ## Coverage
 
 **Covered**
 - Every API request recorded in this project’s local Claude Code transcripts, including the session that built this tracker.
+- Subagent (sidechain) requests, read from <sessionId>/subagents/agent-*.jsonl and attributed to their parent session. Collector 1.0.0 did not read these; see docs/token-tracking.md.
 
 **Not covered**
 - Subscription-level consumption shown by the interactive /usage view (not machine-readable).

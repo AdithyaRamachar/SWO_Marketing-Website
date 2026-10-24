@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "generator": "scripts/optimize-images.ts",
+  "sharpVersion": "0.35.5",
+  "entries": {
+    "references/photography/post-workout-01.jpg": {
+      "source": {
+        "path": "references/photography/post-workout-01.jpg",
+        "bytes": 561132,
+        "width": 1538,
+        "height": 2048,
+        "format": "jpeg",
+        "sha256": "66eee8efb19b6b98e69ed9325a278929c0a55ca7e52bc8eb0fc9ddb7c4da0f8e"
+      },
+      "outputs": [
+        {
+          "path": "public/images/photography/post-workout-01-800.webp",
+          "publicPath": "/images/photography/post-workout-01-800.webp",
+          "width": 800,
+          "height": 1065,
+          "format": "webp",
+          "bytes": 77710,
+          "quality": 78,
+          "lossless": false,
+          "bytesSavedPercent": 86.2
+        }
+      ],
+      "skippedWidths": [
+        1600
+      ]
+    },
+    "references/photography/workout-02.png": {
+      "source": {
+        "path": "references/photography/workout-02.png",
+        "bytes": 1795738,
+        "width": 768,
+        "height": 1365,
+        "format": "png",
+        "sha256": "d798c5a05cd119d4a5f2c7fa6db466827fd70203a1dab19b053e76af2afe58ff"
+      },
+      "outputs": [
+        {
+          "path": "public/images/photography/workout-02-768.webp",
+          "publicPath": "/images/photography/workout-02-768.webp",
+          "width": 768,
+          "height": 1365,
+          "format": "webp",
+          "bytes": 56890,
+          "quality": 78,
+          "lossless": false,
+          "bytesSavedPercent": 96.8
+        }
+      ],
+      "skippedWidths": [
+        800,
+        1600
+      ]
+    },
+    "references/product-screenshots/exercise-card-caution-message.png": {
+      "source": {
+        "path": "references/product-screenshots/exercise-card-caution-message.png",
+        "bytes": 204706,
+        "width": 864,
+        "height": 1920,
+        "format": "png",
+        "sha256": "05dd244d3b821d27eb141e142b466e60a702325adb59856d804022fd3c365129"
+      },
+      "outputs": [
+        {
+          "path": "public/images/product/exercise-card-caution-message-400.webp",
+          "publicPath": "/images/product/exercise-card-caution-message-400.webp",
+          "width": 400,
+          "height": 889,
+          "format": "webp",
+          "bytes": 22924,
+          "quality": 85,
+          "lossless": false,
+          "bytesSavedPercent": 88.8
+        },
+        {
+          "path": "public/images/product/exercise-card-caution-message-800.webp",
+          "publicPath": "/images/product/exercise-card-caution-message-800.webp",
+          "width": 800,
+          "height": 1778,
+          "format": "webp",
+          "bytes": 52608,
+          "quality": 85,
+          "lossless": false,
+          "bytesSavedPercent": 74.3
+        }
+      ],
+      "skippedWidths": []
+    },
+    "references/product-screenshots/exercise-card.png": {
+      "source": {
+        "path": "references/product-screenshots/exercise-card.png",
+        "bytes": 198949,
+        "width": 864,
+        "height": 1920,
+        "format": "png",
+        "sha256": "b196dc7bd39fe9ddd11dd7de959e236a77e6643f581373d280b4e9503b112a23"
+      },
+      "outputs": [
+        {
+          "path": "public/images/product/exercise-card-400.webp",
+          "publicPath": "/images/product/exercise-card-400.webp",
+          "width": 400,
+          "height": 889,
+          "format": "webp",
+          "bytes": 19528,
+          "quality": 85,
+          "lossless": false,
+          "bytesSavedPercent": 90.2
+        },
+        {
+          "path": "public/images/product/exercise-card-800.webp",
+          "publicPath": "/images/product/exercise-card-800.webp",
+          "width": 800,
+          "height": 1778,
+          "format": "webp",
+          "bytes": 44392,
+          "quality": 85,
+          "lossless": false,
+          "bytesSavedPercent": 77.7
+        }
+      ],
+      "skippedWidths": []
+    }
+  }
+}

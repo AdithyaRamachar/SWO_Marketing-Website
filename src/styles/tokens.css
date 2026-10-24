@@ -1,0 +1,195 @@
+/*
+ * SWO design tokens — THE canonical source.
+ *
+ * Every visual value used by the site is defined here and nowhere else:
+ * no TypeScript token file, no duplicated Tailwind config. Tailwind v4 reads
+ * this file through @theme, so each token below is both a CSS custom property
+ * and a Tailwind utility (e.g. --color-brand-primary -> bg-brand-primary).
+ *
+ * Two layers:
+ *   1. PALETTE  (--palette-*)  raw values. Never referenced by components.
+ *   2. SEMANTIC (--color-*, --radius-*, ...)  named by purpose. Components use
+ *      only these.
+ *
+ * Name mapping from docs/style-guide.md: dots become dashes, so
+ * `color.text.primary` is `--color-text-primary` and `radius.card` is
+ * `--radius-card`. docs/style-guide.md documents each token's value, purpose
+ * and WCAG evidence; tests/tokens.test.ts fails if the two drift apart.
+ *
+ * `static` forces every variable to be emitted even if no utility uses it yet,
+ * so plain CSS and the design-system showcase can always read them.
+ */
+
+@theme static {
+  /* Remove Tailwind's default scales so off-system values (bg-red-500, text-sm,
+     rounded-xl ...) fail to compile instead of silently bypassing the system. */
+  --color-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --font-weight-*: initial;
+  --leading-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --breakpoint-*: initial;
+  --container-*: initial;
+
+  /* ------------------------------------------------------------------ */
+  /* 1. PALETTE — raw values (components must not reference these)       */
+  /* ------------------------------------------------------------------ */
+
+  /* Neutrals */
+  --palette-neutral-0: #ffffff;
+  --palette-neutral-50: #f5f7fa;
+  --palette-neutral-100: #edf1f5;
+  --palette-neutral-150: #e2e8ee;
+  --palette-neutral-200: #dce3ea;
+  --palette-neutral-500: #7b8794;
+  --palette-neutral-600: #52607a;
+  --palette-neutral-900: #101827;
+
+  /* Teal (brand) */
+  --palette-teal-50: #e3f5f2;
+  --palette-teal-500: #0f9986;
+  --palette-teal-700: #0b7a6b;
+  --palette-teal-800: #0a6a5c;
+  --palette-teal-900: #095c50;
+
+  /* Decision-state hues (Green / Amber / Red) */
+  --palette-green-100: #ddf7e9;
+  --palette-green-700: #077353;
+  --palette-amber-100: #fff0cc;
+  --palette-amber-700: #925600;
+  --palette-red-100: #fce4e4;
+  --palette-red-700: #b42318;
+
+  /* Informational */
+  --palette-blue-100: #e0eaff;
+  --palette-blue-800: #1e40af;
+
+  /* ------------------------------------------------------------------ */
+  /* 2. SEMANTIC — colour                                                */
+  /* ------------------------------------------------------------------ */
+
+  /* Text */
+  --color-text-primary: var(--palette-neutral-900);
+  --color-text-secondary: var(--palette-neutral-600);
+  --color-text-inverse: var(--palette-neutral-0);
+  --color-text-disabled: var(--palette-neutral-500);
+
+  /* Brand */
+  --color-brand-primary: var(--palette-teal-700);
+  --color-brand-primary-hover: var(--palette-teal-800);
+  --color-brand-primary-active: var(--palette-teal-900);
+  --color-brand-on-primary: var(--palette-neutral-0);
+  --color-brand-subtle: var(--palette-teal-50);
+  --color-brand-accent: var(--palette-teal-500);
+
+  /* Surfaces */
+  --color-surface-page: var(--palette-neutral-0);
+  --color-surface-subtle: var(--palette-neutral-50);
+  --color-surface-hover: var(--palette-neutral-100);
+  --color-surface-pressed: var(--palette-neutral-150);
+  --color-surface-disabled: var(--palette-neutral-100);
+
+  /* Borders */
+  --color-border-default: var(--palette-neutral-200);
+  --color-border-strong: var(--palette-neutral-500);
+
+  /* Workout decision states: Green / Amber / Red.
+     Semantic only; never decoration. Always paired with a text label + icon. */
+  --color-status-green-bg: var(--palette-green-100);
+  --color-status-green-fg: var(--palette-green-700);
+  --color-status-amber-bg: var(--palette-amber-100);
+  --color-status-amber-fg: var(--palette-amber-700);
+  --color-status-red-bg: var(--palette-red-100);
+  --color-status-red-fg: var(--palette-red-700);
+
+  /* General UI feedback. Success / warning / danger deliberately ALIAS the
+     decision-state tokens so the system has one green, one amber, one red. */
+  --color-feedback-success-bg: var(--color-status-green-bg);
+  --color-feedback-success-fg: var(--color-status-green-fg);
+  --color-feedback-warning-bg: var(--color-status-amber-bg);
+  --color-feedback-warning-fg: var(--color-status-amber-fg);
+  --color-feedback-danger-bg: var(--color-status-red-bg);
+  --color-feedback-danger-fg: var(--color-status-red-fg);
+  --color-feedback-info-bg: var(--palette-blue-100);
+  --color-feedback-info-fg: var(--palette-blue-800);
+
+  /* Focus */
+  --color-focus-ring: var(--color-brand-primary);
+
+  /* ------------------------------------------------------------------ */
+  /* 3. Typography                                                       */
+  /* ------------------------------------------------------------------ */
+
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --text-hero: clamp(2.75rem, 5vw, 4.5rem);
+  --text-hero--line-height: 1.05;
+  --text-h2: clamp(2rem, 3.2vw, 3rem);
+  --text-h2--line-height: 1.15;
+  --text-h3: 1.25rem;
+  --text-h3--line-height: 1.2;
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.5;
+
+  --leading-heading: 1.15;
+  --leading-body: 1.6;
+
+  /* ------------------------------------------------------------------ */
+  /* 4. Spacing, geometry, layout                                        */
+  /* ------------------------------------------------------------------ */
+
+  /* One step = 0.25rem, so Tailwind's numeric utilities line up exactly with
+     the documented scale: p-4 = space.4 = 1rem. Only the documented steps
+     (1 2 3 4 6 8 12 16) are permitted; the design-system auditor flags others. */
+  --spacing: 0.25rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  --radius-card: 1rem;
+  --radius-button: 0.625rem;
+  --radius-control: 0.625rem;
+  --radius-pill: 9999px;
+
+  /* Tailwind's built-in `border` (1px) and `border-2` (2px) are the values of
+     these two tokens; tests/tokens.test.ts pins them. */
+  --border-width-default: 1px;
+  --border-width-strong: 2px;
+
+  --shadow-card: 0 1px 2px 0 rgb(16 24 39 / 0.06), 0 1px 3px 0 rgb(16 24 39 / 0.08);
+  --shadow-raised: 0 4px 6px -1px rgb(16 24 39 / 0.08), 0 10px 24px -4px rgb(16 24 39 / 0.12);
+
+  --container-content: 72rem;
+  --container-prose: 42rem;
+
+  /* Mobile-first. The style guide specified no breakpoints; these equal
+     Tailwind's defaults and are recorded as PROPOSED until Phase D checks
+     them against the real layout. */
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+
+  /* ------------------------------------------------------------------ */
+  /* 5. Interaction                                                      */
+  /* ------------------------------------------------------------------ */
+
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+  --default-transition-duration: 150ms;
+  --min-target-size: 2.75rem;
+}

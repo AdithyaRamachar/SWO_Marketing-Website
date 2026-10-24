@@ -48,6 +48,10 @@ export interface RequestUsage {
   model: string | null;
   requested_model: string | null;
   is_sidechain: boolean;
+  /** Subagent that produced the request, from the record. Null for the main thread. */
+  agent_id: string | null;
+  /** Subagent type (e.g. design-system-auditor), from its .meta.json. Set by the collector. */
+  agent_type: string | null;
   input_tokens: number | null;
   output_tokens: number | null;
   /** Subset of output_tokens. Never added into total_tokens. */
@@ -182,6 +186,8 @@ export function extractUsage(
     model: message && typeof message['model'] === 'string' ? message['model'] : null,
     requested_model: typeof line['requestedModel'] === 'string' ? line['requestedModel'] : null,
     is_sidechain: line['isSidechain'] === true,
+    agent_id: typeof line['agentId'] === 'string' ? line['agentId'] : null,
+    agent_type: null,
     input_tokens: values.input_tokens,
     output_tokens: values.output_tokens,
     thinking_tokens: details ? numberOrNull(details['thinking_tokens']) : null,
@@ -408,6 +414,8 @@ const CSV_COLUMNS = [
   'model',
   'requested_model',
   'is_sidechain',
+  'agent_id',
+  'agent_type',
   'input_tokens',
   'output_tokens',
   'thinking_tokens',

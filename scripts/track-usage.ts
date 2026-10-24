@@ -30,6 +30,7 @@ import {
   emptyDiagnostics,
   resolveSessionStatus,
   sortRequests,
+  sumTotals,
   summariseProject,
   summariseSession,
   toCsv,
@@ -40,7 +41,7 @@ import {
   type SessionSummary,
 } from './lib/usage-parse.ts';
 
-const COLLECTOR_VERSION = '1.0.0';
+const COLLECTOR_VERSION = '1.1.0';
 
 /**
  * Shape of one model's entry inside a cost-state record. Field names differ
@@ -194,53 +195,110 @@ async function resolveTranscriptDir(opts: Options): Promise<string> {
 }
 
 interface FileRead {
+  /** Path relative to the transcript directory. */
   file: string;
+  kind: 'session' | 'subagent';
+  /** For a subagent file this is the PARENT session id (its folder name). */
   session_id_from_filename: string;
+  agent_type: string | null;
   mtime_ms: number | null;
   lines: string[];
 }
 
+async function readOne(
+  full: string,
+  label: string,
+): Promise<{ mtime: number | null; text: string } | null> {
+  let mtime: number | null = null;
+  try {
+    mtime = (await stat(full)).mtimeMs;
+  } catch {
+    mtime = null;
+  }
+  try {
+    return { mtime, text: await readFile(full, 'utf8') };
+  } catch (err) {
+    // An unreadable transcript is a coverage gap, not a reason to abort.
+    process.stderr.write(`warning: could not read ${label}: ${String(err)}
+`);
+    return null;
+  }
+}
+
+/** The subagent type lives in a sibling agent-<id>.meta.json. Optional: absent means unknown. */
+async function readAgentType(jsonlPath: string): Promise<string | null> {
+  try {
+    const meta = JSON.parse(await readFile(jsonlPath.replace(/.jsonl$/, '.meta.json'), 'utf8')) as {
+      agentType?: unknown;
+    };
+    return typeof meta.agentType === 'string' ? meta.agentType : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Main transcripts are <dir>/<sessionId>.jsonl. Subagent (sidechain) work is NOT in
+ * them: it is written to <dir>/<sessionId>/subagents/agent-<id>.jsonl. Collector 1.0.0
+ * read only the first kind, which silently dropped all subagent usage.
+ */
 async function readTranscripts(dir: string): Promise<FileRead[]> {
-  const entries = (await readdir(dir, { withFileTypes: true }))
+  const entries = await readdir(dir, { withFileTypes: true });
+  const files: FileRead[] = [];
+
+  for (const name of entries
     .filter((e) => e.isFile() && e.name.endsWith('.jsonl'))
     .map((e) => e.name)
-    .sort();
-
-  const files: FileRead[] = [];
-  for (const name of entries) {
-    const full = path.join(dir, name);
-    let mtime: number | null = null;
-    try {
-      mtime = (await stat(full)).mtimeMs;
-    } catch {
-      mtime = null;
-    }
-    let text = '';
-    try {
-      text = await readFile(full, 'utf8');
-    } catch (err) {
-      // An unreadable transcript is a coverage gap, not a reason to abort.
-      process.stderr.write(`warning: could not read ${name}: ${String(err)}\n`);
-      continue;
-    }
+    .sort()) {
+    const loaded = await readOne(path.join(dir, name), name);
+    if (!loaded) continue;
     files.push({
       file: name,
+      kind: 'session',
       session_id_from_filename: path.basename(name, '.jsonl'),
-      mtime_ms: mtime,
-      lines: text.split('\n'),
+      agent_type: null,
+      mtime_ms: loaded.mtime,
+      lines: loaded.text.split('\n'),
     });
+  }
+
+  for (const sessionDir of entries
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name)
+    .sort()) {
+    const subDir = path.join(dir, sessionDir, 'subagents');
+    let subEntries: string[];
+    try {
+      subEntries = (await readdir(subDir)).filter((n) => n.endsWith('.jsonl')).sort();
+    } catch {
+      continue; // no subagents for this session
+    }
+    for (const name of subEntries) {
+      const full = path.join(subDir, name);
+      const relative = `${sessionDir}/subagents/${name}`;
+      const loaded = await readOne(full, relative);
+      if (!loaded) continue;
+      files.push({
+        file: relative,
+        kind: 'subagent',
+        session_id_from_filename: sessionDir,
+        agent_type: await readAgentType(full),
+        mtime_ms: loaded.mtime,
+        lines: loaded.text.split('\n'),
+      });
+    }
   }
   return files;
 }
 
 interface Ledger {
-  schema_version: 1;
+  schema_version: 2;
   collector_version: string;
   project: string;
   source: {
     kind: 'claude-code-transcript';
     directory: string;
-    files: Array<{ file: string; lines: number }>;
+    files: Array<{ file: string; kind: 'session' | 'subagent'; lines: number }>;
   };
   accounting: {
     total_tokens_formula: string;
@@ -278,9 +336,7 @@ async function main(): Promise<void> {
   const files = await readTranscripts(dir);
 
   if (files.length === 0) {
-    throw new Error(
-      `No .jsonl transcripts found in ${dir}. No ledger written; nothing estimated.`,
-    );
+    throw new Error(`No .jsonl transcripts found in ${dir}. No ledger written; nothing estimated.`);
   }
 
   // Deduplicate GLOBALLY across files, not per file: a forked or resumed
@@ -289,12 +345,21 @@ async function main(): Promise<void> {
   const byRequest = new Map<string, RequestUsage>();
   const costStateBySession = new Map<string, CostStateCrossCheck>();
   let crossFileDuplicates = 0;
-  const fileStats: Array<{ file: string; lines: number }> = [];
+  const fileStats: Array<{ file: string; kind: 'session' | 'subagent'; lines: number }> = [];
 
   for (const file of files) {
     const before = diagnostics.lines_read;
     const result = collectFromLines(file.lines, file.session_id_from_filename, diagnostics);
-    fileStats.push({ file: file.file, lines: diagnostics.lines_read - before });
+    fileStats.push({ file: file.file, kind: file.kind, lines: diagnostics.lines_read - before });
+
+    if (file.kind === 'subagent') {
+      // Location is authoritative: anything under subagents/ is subagent work,
+      // attributed to the parent session, even if a record omits isSidechain.
+      for (const request of result.requests) {
+        request.is_sidechain = true;
+        request.agent_type = file.agent_type;
+      }
+    }
 
     for (const request of result.requests) {
       if (byRequest.has(request.request_id)) {
@@ -310,10 +375,12 @@ async function main(): Promise<void> {
   const requests = sortRequests([...byRequest.values()]);
 
   const mtimeBySession = new Map<string, number | null>();
-  for (const f of files) mtimeBySession.set(f.session_id_from_filename, f.mtime_ms);
+  // Only a main transcript's mtime says whether the session is still being written.
+  for (const f of files) {
+    if (f.kind === 'session') mtimeBySession.set(f.session_id_from_filename, f.mtime_ms);
+  }
 
-  const currentSessionId =
-    opts.sessionId ?? process.env['CLAUDE_CODE_SESSION_ID'] ?? null;
+  const currentSessionId = opts.sessionId ?? process.env['CLAUDE_CODE_SESSION_ID'] ?? null;
   const nowMs = Date.now();
   const stalenessMs = opts.stalenessMinutes * 60_000;
 
@@ -366,7 +433,7 @@ async function main(): Promise<void> {
   }
 
   const ledger: Ledger = {
-    schema_version: 1,
+    schema_version: 2,
     collector_version: COLLECTOR_VERSION,
     project: 'Smart Workout Optimizer (SWO) marketing website',
     source: { kind: 'claude-code-transcript', directory: dir, files: fileStats },
@@ -396,6 +463,7 @@ async function main(): Promise<void> {
     coverage: {
       covered: [
         'Every API request recorded in this project\u2019s local Claude Code transcripts, including the session that built this tracker.',
+        'Subagent (sidechain) requests, read from <sessionId>/subagents/agent-*.jsonl and attributed to their parent session. Collector 1.0.0 did not read these; see docs/token-tracking.md.',
       ],
       not_covered: [
         'Subscription-level consumption shown by the interactive /usage view (not machine-readable).',
@@ -432,12 +500,8 @@ function renderSummary(ledger: Ledger): string {
 
   lines.push('# Claude Code Token & Session Usage — SWO Website');
   lines.push('');
-  lines.push(
-    '> Generated by `npm run track:usage` from local Claude Code session transcripts.',
-  );
-  lines.push(
-    '> This file is regenerated from source on every run and contains no run timestamp,',
-  );
+  lines.push('> Generated by `npm run track:usage` from local Claude Code session transcripts.');
+  lines.push('> This file is regenerated from source on every run and contains no run timestamp,');
   lines.push('> so two consecutive runs over unchanged input produce identical output.');
   lines.push('');
   lines.push('## Project totals');
@@ -470,6 +534,29 @@ function renderSummary(ledger: Ledger): string {
     );
   }
   lines.push('');
+  lines.push('## Subagents by type');
+  lines.push('');
+  const sidechainRequests = ledger.requests.filter((r) => r.is_sidechain);
+  if (sidechainRequests.length === 0) {
+    lines.push('No subagent requests recorded.');
+  } else {
+    lines.push(
+      'Subagent work is attributed to its parent session and is included in the totals above.',
+    );
+    lines.push('');
+    lines.push('| Agent type | Agents | Requests | Output | Total |');
+    lines.push('|---|---:|---:|---:|---:|');
+    const types = [...new Set(sidechainRequests.map((r) => r.agent_type ?? 'unknown'))].sort();
+    for (const type of types) {
+      const group = sidechainRequests.filter((r) => (r.agent_type ?? 'unknown') === type);
+      const totals = sumTotals(group);
+      const agents = new Set(group.map((r) => r.agent_id ?? r.request_id)).size;
+      lines.push(
+        `| \`${type}\` | ${n(agents)} | ${n(totals.requests)} | ${n(totals.output_tokens)} | ${n(totals.total_tokens)} |`,
+      );
+    }
+  }
+  lines.push('');
   lines.push('## By model');
   lines.push('');
   lines.push('| Model | Requests | Input | Output | Cache create | Cache read | Total |');
@@ -488,8 +575,7 @@ function renderSummary(ledger: Ledger): string {
   for (const s of ledger.sessions) {
     // With no requests there is no timestamp to show at all, which is different
     // from a running session that simply has no end yet.
-    const lastRequest =
-      s.totals.requests === 0 ? '—' : (s.end_timestamp ?? '(running)');
+    const lastRequest = s.totals.requests === 0 ? '—' : (s.end_timestamp ?? '(running)');
     lines.push(
       `| \`${s.session_id}\` | ${s.status} | ${s.start_timestamp ?? '—'} | ` +
         `${lastRequest} | ${s.models.map((m) => `\`${m}\``).join(', ') || '—'} | ` +
@@ -505,9 +591,13 @@ function renderSummary(ledger: Ledger): string {
   lines.push(
     `- **Duplicate lines dropped: ${n(d.duplicate_lines_dropped)}** — same request written once per content block; counting lines instead of requests would have inflated every total.`,
   );
-  lines.push(`- Duplicate requests across files (forks/resumes): ${n(d.cross_file_duplicate_requests)}`);
+  lines.push(
+    `- Duplicate requests across files (forks/resumes): ${n(d.cross_file_duplicate_requests)}`,
+  );
   lines.push(`- Malformed lines skipped: ${n(d.lines_malformed)}`);
-  lines.push(`- Lines without usage (user turns, tool records, metadata): ${n(d.lines_ignored_no_usage)}`);
+  lines.push(
+    `- Lines without usage (user turns, tool records, metadata): ${n(d.lines_ignored_no_usage)}`,
+  );
   lines.push(`- Fork context references: ${n(d.fork_context_refs)}`);
   lines.push(
     `- Conflicting duplicates: ${d.conflicting_duplicates.length === 0 ? 'none' : d.conflicting_duplicates.join(', ')}`,
@@ -515,7 +605,9 @@ function renderSummary(ledger: Ledger): string {
   lines.push(
     `- Multi-iteration records: ${d.multi_iteration_records.length === 0 ? 'none (top-level usage is authoritative)' : d.multi_iteration_records.join(', ')}`,
   );
-  lines.push(`- Requests with a missing component field: ${n(p.totals.requests_with_missing_fields)}`);
+  lines.push(
+    `- Requests with a missing component field: ${n(p.totals.requests_with_missing_fields)}`,
+  );
   lines.push('');
   lines.push('## Cost-state cross-check');
   lines.push('');
@@ -525,7 +617,9 @@ function renderSummary(ledger: Ledger): string {
       'No `cost-state` records present in these transcripts. Claude Code writes them inconsistently, so they are an optional cross-check only — never the measurement source.',
     );
   } else {
-    lines.push('Independent rollup Claude Code wrote itself. Partial by nature; for comparison only.');
+    lines.push(
+      'Independent rollup Claude Code wrote itself. Partial by nature; for comparison only.',
+    );
     lines.push('');
     for (const s of withCost) {
       const cs = s.cost_state_cross_check;
@@ -541,12 +635,8 @@ function renderSummary(ledger: Ledger): string {
   if (sup.sessions.length === 0) {
     lines.push('None. Every session with recorded usage had it in assistant records.');
   } else {
-    lines.push(
-      'These sessions have **no usage-bearing assistant lines**, so the collector cannot',
-    );
-    lines.push(
-      'count their requests. Their usage survives only in a `cost-state` record and is',
-    );
+    lines.push('These sessions have **no usage-bearing assistant lines**, so the collector cannot');
+    lines.push('count their requests. Their usage survives only in a `cost-state` record and is');
     lines.push('reported here. **It is not included in the project totals above.**');
     lines.push('');
     lines.push('| Session | Model | Input | Output | Cache read | Cache create | Total |');
@@ -611,6 +701,8 @@ function renderStdout(ledger: Ledger, dir: string): string {
 }
 
 main().catch((err: unknown) => {
-  process.stderr.write(`track:usage failed — ${err instanceof Error ? err.message : String(err)}\n`);
+  process.stderr.write(
+    `track:usage failed — ${err instanceof Error ? err.message : String(err)}\n`,
+  );
   process.exitCode = 1;
 });

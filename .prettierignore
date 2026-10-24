@@ -1,0 +1,15 @@
+node_modules
+dist
+package-lock.json
+references
+public/images
+
+# Documents are written by hand and by the project owner; Prettier covers code.
+*.md
+docs/asset-manifest.json
+docs/evidence
+
+# Generated, or fixed-format data
+tracking
+tests/fixtures
+.claude

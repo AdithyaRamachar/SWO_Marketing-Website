@@ -1,0 +1,86 @@
+session_id      : 66cb4f8d-9723-4e77-9b2d-03315ad9396e
+main model      : claude-sonnet-4-6
+agents loaded   : ["claude","claude-code-guide","design-system-auditor","Explore","general-purpose","Plan","statusline-setup"]
+
+--- tool calls (main thread vs inside the subagent) ---
+[main] Agent {"description":"Audit RiskSummarySection.tsx against design system","subagent_type":"design-system-auditor","prompt":"docs/evidence/subagent-audit/fix
+[subagent] Read {"file_path":"E://Projects//Airtribe_PM//SWO_Project//CLAUDE.md"}
+[subagent] Read {"file_path":"E://Projects//Airtribe_PM//SWO_Project//docs//audit-rules.md"}
+[subagent] Read {"file_path":"E://Projects//Airtribe_PM//SWO_Project//docs//style-guide.md"}
+[subagent] Read {"file_path":"E://Projects//Airtribe_PM//SWO_Project//docs//component-reference.md"}
+[subagent] Read {"file_path":"E://Projects//Airtribe_PM//SWO_Project//docs//content-model.md"}
+[subagent] Read {"file_path":"E://Projects//Airtribe_PM//SWO_Project//src//styles//tokens.css"}
+[subagent] Read {"file_path":"E://Projects//Airtribe_PM//SWO_Project//docs//evidence//subagent-audit//fixture//after//RiskSummarySection.tsx"}
+[subagent] Grep {"pattern":"--color-brand-primary//b","file_path":"E://Projects//Airtribe_PM//SWO_Project//src//styles//tokens.css","output_mode":"content"}
+[subagent] Grep {"pattern":"--text-body//b","file_path":"E://Projects//Airtribe_PM//SWO_Project//src//styles//tokens.css","output_mode":"content"}
+[subagent] Grep {"pattern":"--color-brand-primary//b","path":"E://Projects//Airtribe_PM//SWO_Project//src//styles//tokens.css","output_mode":"content"}
+[subagent] Grep {"pattern":"--text-body//b","path":"E://Projects//Airtribe_PM//SWO_Project//src//styles//tokens.css","output_mode":"content"}
+[subagent] Grep {"pattern":"--font-weight-semibold","path":"E://Projects//Airtribe_PM//SWO_Project//src//styles//tokens.css","output_mode":"content"}
+[subagent] Grep {"pattern":"statuses","path":"E://Projects//Airtribe_PM//SWO_Project//src//content","output_mode":"content","-n":true}
+[subagent] Read {"file_path":"E://Projects//Airtribe_PM//SWO_Project//src//content//schema.ts","limit":30,"offset":360}
+[subagent] Grep {"pattern":"state","path":"E://Projects//Airtribe_PM//SWO_Project//src//content//schema.ts","output_mode":"content","-n":true}
+
+Agent tool calls : 1 | subagent_type(s): design-system-auditor
+write/edit calls : 0
+is_error: false | turns: 2 | denials: 0 | models: claude-haiku-4-5-20251001, claude-sonnet-4-6
+
+=================== FINAL RESULT ===================
+`state` is typed as the enum `'green' | 'amber' | 'red'`, which exactly matches `StatusBadge`'s `status` prop. All type usage is consistent.
+
+I have completed the full read-only inspection. I have all the information needed for the report.
+
+# Design-system audit
+
+**Scope:** `docs/evidence/subagent-audit/fixture/after/RiskSummarySection.tsx` — explicitly named by the user. This file is in `docs/evidence/` but is explicitly in scope per the auditing rules.
+
+**Checks performed:** Read-only inspection of the target file and all five prerequisite documents (`CLAUDE.md`, `docs/audit-rules.md`, `docs/style-guide.md`, `docs/component-reference.md`, `docs/content-model.md`, `src/styles/tokens.css`). Verified every token name and Tailwind utility used in the component against the canonical token file. No tests, lint, type-checker or build were run.
+
+**Verdict:** PASS (0 confirmed violations)
+
+## Confirmed violations
+
+None.
+
+## Uncertain observations (need confirmation)
+
+None.
+
+## Checked and clean
+
+**Colour (DS-COLOR-01, DS-COLOR-02):** No hex, `rgb()`, `hsl()`, named colour, or `--palette-*` reference. The link uses `text-brand-primary`, which maps to the semantic token `--color-brand-primary` confirmed in `tokens.css` line 80.
+
+**Colour (DS-COLOR-03):** `--color-brand-accent` is not used anywhere in the file.
+
+**Colour (DS-COLOR-04):** No form controls or button boundaries in this component.
+
+**Decision states (DS-STATE-01, DS-STATE-02):** Green/Amber/Red are rendered only via `StatusBadge` to show workout decision states (`entry.state` is typed as the `green | amber | red` enum from the validated schema). No decorative use of status colours.
+
+**Spacing (DS-SPACE-01):** All spacing utilities — `mt-8`, `gap-6`, `gap-3` — correspond to documented steps (8, 6, 3). No arbitrary `px`/`rem` values and no off-schedule steps.
+
+**Typography (DS-TYPE-01):** `text-body` maps to `--text-body` (tokens.css line 138). `font-semibold` maps to `--font-weight-semibold` (tokens.css line 129). No arbitrary font sizes or inline `fontSize`.
+
+**Radius (DS-RADIUS-01):** No radius utilities used directly in this file; `Card` and `SectionContainer` handle their own radius internally.
+
+**Shadow (DS-SHADOW-01):** No shadow utilities used directly.
+
+**Components (DS-COMP-01, DS-COMP-02):** `SectionContainer`, `SectionHeading`, `Card`, and `StatusBadge` are all used in place of hand-built equivalents. Props used — `aria-labelledby` on `SectionContainer`, `id`/`title` on `SectionHeading`, `as="article"` on `Card`, `status` and `children` on `StatusBadge` — are all documented variants.
+
+**Accessibility (A11Y-01):** `StatusBadge` is used for every status entry; it carries both a text label (`entry.label`) and a distinct icon shape per the component reference. Status is not conveyed by colour alone.
+
+**Accessibility (A11Y-03):** The only interactive element is an `<a href="#faq">` — a real anchor element with a real in-page destination.
+
+**Accessibility (A11Y-04):** No `<img>` elements in this component.
+
+**Accessibility (A11Y-05):** `SectionContainer` receives `aria-labelledby="risk-summary-heading"` referencing `SectionHeading id="risk-summary-heading"`. The section is a named landmark.
+
+**Accessibility (A11Y-07):** `href="#faq"` is a valid in-page anchor (confirmed as a permitted section id in `docs/content-model.md`). No placeholder links.
+
+**Responsive layout (RESP-01):** `md:grid-cols-3` uses a documented breakpoint (`--breakpoint-md`, tokens.css line 183). No fixed pixel widths on containers. Layout stacks on narrow screens (single column) and widens at `md`.
+
+**Content (CONTENT-01):** The prop is typed as `SiteContent['statuses']`, which can only be obtained from `validateSiteContent()`. The component does not import `site-content.json` or any raw literal.
+
+**Content (CONTENT-02, CONTENT-03, CONTENT-04):** No marketing copy is hard-coded in JSX; all text comes from the validated `statuses` data. No unsupported claims, fabricated trust signals, or live-product implications are present.
+
+## Recommended next steps
+
+None — no confirmed violations were found.

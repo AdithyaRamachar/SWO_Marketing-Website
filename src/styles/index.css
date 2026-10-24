@@ -1,0 +1,37 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+/* Global behaviour that cannot be expressed as component utilities.
+   Values come only from tokens.css. */
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-surface-page);
+    color: var(--color-text-primary);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+
+  /* One consistent, always-visible keyboard focus indicator. The offset leaves
+     a gap so the ring stays distinguishable on top of a same-hue button. */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

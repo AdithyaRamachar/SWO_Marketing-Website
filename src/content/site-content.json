@@ -1,0 +1,188 @@
+{
+  "meta": {
+    "title": "Smart Workout Optimizer (SWO): exercise-level training guidance",
+    "description": "Wearable-free training guidance. SWO turns sleep quality, fatigue and workout history into exercise-level Green, Amber and Red recommendations."
+  },
+  "hero": {
+    "eyebrow": "Smart Workout Optimizer",
+    "headline": "Know whether to push, hold or ease off, exercise by exercise.",
+    "supportingCopy": "SWO turns your sleep quality, fatigue and workout history into Green, Amber and Red guidance for each exercise, with the reasoning shown beside every call. No wearable required.",
+    "primaryCta": { "label": "See how it works", "href": "#how-it-works" },
+    "secondaryCta": { "label": "Understand Green, Amber and Red", "href": "#status" },
+    "preview": {
+      "src": "/images/product/exercise-card-800.webp",
+      "alt": "SWO exercise card for a lying leg curl showing an optimal-day message and two suggested next-set targets",
+      "width": 800,
+      "height": 1778,
+      "caption": "Screenshot of the SWO app interface."
+    }
+  },
+  "problem": {
+    "heading": "Training by feel is guesswork",
+    "body": "Choosing today's weights from memory and mood is easy. Weighing sleep, soreness and recent sessions against each other, mid-workout, is much harder.",
+    "points": [
+      "Sleep quality shapes how a session feels.",
+      "Fatigue and stiffness carry over between workouts.",
+      "Last session's numbers are easy to misremember."
+    ]
+  },
+  "howItWorks": {
+    "heading": "From three daily inputs to a call on every exercise",
+    "intro": "SWO reads what you tell it, compares it with training frameworks, and answers per exercise.",
+    "steps": [
+      {
+        "id": "sleep-quality",
+        "stage": "input",
+        "title": "Sleep quality",
+        "description": "Tell SWO how well you slept before you train."
+      },
+      {
+        "id": "fatigue-stiffness",
+        "stage": "input",
+        "title": "Fatigue and stiffness",
+        "description": "Note how fatigued or stiff you feel, so today's guidance reflects it."
+      },
+      {
+        "id": "workout-history",
+        "stage": "input",
+        "title": "Workout performance history",
+        "description": "Your logged sets and reps give SWO the recent training context."
+      },
+      {
+        "id": "analysis",
+        "stage": "analysis",
+        "title": "Analysis against frameworks",
+        "description": "SWO reads your inputs alongside workload, recovery and progression ideas from sports science."
+      },
+      {
+        "id": "guidance",
+        "stage": "guidance",
+        "title": "Exercise-level guidance",
+        "description": "Each exercise gets a status, the reason for it and a suggested action."
+      }
+    ]
+  },
+  "statuses": [
+    {
+      "state": "green",
+      "label": "Optimal zone",
+      "meaning": "The exercise sits within SWO's defined training range for today.",
+      "exampleRationale": "Example: recovery looks strong and recent sessions on this exercise have been steady, so there is room to progress.",
+      "suggestedAction": "Train as planned, or consider a small step up in load or reps."
+    },
+    {
+      "state": "amber",
+      "label": "Caution zone",
+      "meaning": "Something in today's inputs suggests adjusting intensity or volume.",
+      "exampleRationale": "Example: this muscle is recovered, but overall readiness is moderate, so a lighter session may be wise.",
+      "suggestedAction": "Consider reducing the weight or the number of sets."
+    },
+    {
+      "state": "red",
+      "label": "High-risk flag",
+      "meaning": "SWO's rules recommend rest or active recovery for this exercise today.",
+      "exampleRationale": "Example: recovery signals and recent training load both point toward holding back on this exercise.",
+      "suggestedAction": "Rest, or choose an active-recovery option instead."
+    }
+  ],
+  "features": [
+    {
+      "id": "exercise-level-guidance",
+      "heading": "A call on every exercise, not one score for the day",
+      "description": "A good day for one lift can hide a poor day for another. SWO gives each exercise its own status, so you can adjust where it matters.",
+      "bullets": [
+        "Status shown as text and an icon, never colour alone.",
+        "Suggested next-set targets sit beside the reason."
+      ],
+      "image": {
+        "src": "/images/product/exercise-card-800.webp",
+        "alt": "SWO exercise card for a lying leg curl with an optimal-day message and suggested weight and rep targets",
+        "width": 800,
+        "height": 1778
+      },
+      "imageSide": "end"
+    },
+    {
+      "id": "reason-beside-status",
+      "heading": "The reason sits beside the status",
+      "description": "When SWO suggests easing off, it says why in plain words and offers a lighter target, so you can judge the call yourself.",
+      "image": {
+        "src": "/images/product/exercise-card-caution-message-800.webp",
+        "alt": "SWO caution-zone card suggesting a reduced weight, with a short explanation and a lighter suggested set",
+        "width": 800,
+        "height": 1778
+      },
+      "imageSide": "start"
+    }
+  ],
+  "methodology": {
+    "heading": "The ideas behind the guidance",
+    "intro": "SWO draws on established training concepts. Each is described here as a concept first, then as what SWO does with it.",
+    "frameworks": [
+      {
+        "id": "acwr",
+        "name": "Acute:chronic workload ratio (ACWR)",
+        "concept": "A published way of comparing recent training load with the load an athlete has been used to over a longer period.",
+        "swoImplementation": "SWO uses this idea as one input when it forms guidance. This page does not claim it predicts injury.",
+        "evidenceStatus": "framework-description-only"
+      },
+      {
+        "id": "fatigue-recovery",
+        "name": "Fatigue and recovery",
+        "concept": "The idea that training creates fatigue, and that how ready you are reflects the balance between that fatigue and recovery over time.",
+        "swoImplementation": "SWO asks for your sleep quality and fatigue and stiffness so that guidance reflects how recovered you report feeling.",
+        "evidenceStatus": "framework-description-only"
+      },
+      {
+        "id": "progressive-overload",
+        "name": "Progressive overload",
+        "concept": "Gradually raising the demand on the body over time, for example a little more weight or one more rep.",
+        "swoImplementation": "SWO can suggest a next target, such as a slightly heavier load or more reps, when its rules judge a day suitable to progress.",
+        "evidenceStatus": "framework-description-only"
+      }
+    ],
+    "disclaimer": "SWO is a training decision-support tool. It does not diagnose, treat or prevent injury or illness and is not a substitute for professional advice. Its guidance follows the app's own rules and has not been clinically validated."
+  },
+  "faq": [
+    {
+      "id": "wearable",
+      "question": "Do I need a wearable to use SWO?",
+      "answer": "No. SWO is wearable-free. It works from the sleep quality, fatigue and stiffness, and workout history that you provide."
+    },
+    {
+      "id": "colours",
+      "question": "What do Green, Amber and Red mean?",
+      "answer": "Green is the optimal zone, Amber is a caution zone where adjusting intensity or volume may help, and Red is a high-risk flag where SWO recommends rest or active recovery. Every status comes with a label, an icon and a reason."
+    },
+    {
+      "id": "medical",
+      "question": "Is SWO medical advice?",
+      "answer": "No. SWO supports training decisions. It does not diagnose conditions, and it should not replace advice from a qualified professional."
+    },
+    {
+      "id": "audience",
+      "question": "Who is SWO for?",
+      "answer": "SWO is designed for individual gym-goers and serious lifters who want help deciding how hard to train on a given day."
+    },
+    {
+      "id": "screenshots",
+      "question": "Are the screenshots on this page a live product?",
+      "answer": "The screenshots show the SWO app interface. This page is a marketing preview and is not a live connection to the app."
+    }
+  ],
+  "footer": {
+    "tagline": "Smart Workout Optimizer (SWO)",
+    "linkGroups": [
+      {
+        "heading": "Explore",
+        "links": [
+          { "label": "How it works", "href": "#how-it-works" },
+          { "label": "Green, Amber and Red", "href": "#status" },
+          { "label": "The science", "href": "#science" },
+          { "label": "FAQ", "href": "#faq" }
+        ]
+      }
+    ],
+    "legalNote": "SWO is a training decision-support tool, not medical advice. Screenshots show the app interface and do not represent a live connection."
+  }
+}

@@ -1,0 +1,77 @@
+session_id      : 3ce993b4-2106-4142-b5f1-9b1a19fc2fc8
+main model      : claude-sonnet-4-6
+agents loaded   : ["claude","claude-code-guide","design-system-auditor","Explore","general-purpose","Plan","statusline-setup"]
+
+--- tool calls (main thread vs inside the subagent) ---
+[main] Agent {"description":"Design system audit of RiskSummarySection.tsx","subagent_type":"design-system-auditor","prompt":"docs/evidence/subagent-audit/fixture/
+[subagent] Read {"file_path":"E://Projects//Airtribe_PM//SWO_Project//CLAUDE.md"}
+[subagent] Read {"file_path":"E://Projects//Airtribe_PM//SWO_Project//docs//audit-rules.md"}
+[subagent] Read {"file_path":"E://Projects//Airtribe_PM//SWO_Project//docs//style-guide.md"}
+[subagent] Read {"file_path":"E://Projects//Airtribe_PM//SWO_Project//docs//component-reference.md"}
+[subagent] Read {"file_path":"E://Projects//Airtribe_PM//SWO_Project//docs//content-model.md"}
+[subagent] Read {"file_path":"E://Projects//Airtribe_PM//SWO_Project//src//styles//tokens.css"}
+[subagent] Read {"file_path":"E://Projects//Airtribe_PM//SWO_Project//docs//evidence//subagent-audit//fixture//after//RiskSummarySection.tsx"}
+[subagent] Grep {"pattern":"#[0-9a-fA-F]{3,6}|rgb//(|hsl//(|bg-red-|bg-green-|bg-amber-|bg-gray-|bg-blue-|text-red-|text-green-|text-gray-|text-blue-|text-amber-","fi
+[subagent] Grep {"pattern":"--palette-","file_path":"E://Projects//Airtribe_PM//SWO_Project//docs//evidence//subagent-audit//fixture//after//RiskSummarySection.tsx","
+[subagent] Grep {"pattern":"#[0-9a-fA-F]{3,6}|rgb//(|hsl//(|bg-red-|bg-green-|bg-amber-|bg-gray-|bg-blue-|text-red-|text-green-|text-gray-|text-blue-|text-amber-","pa
+[subagent] Grep {"pattern":"--palette-","path":"E://Projects//Airtribe_PM//SWO_Project//docs//evidence//subagent-audit//fixture//after//RiskSummarySection.tsx","outpu
+[subagent] Grep {"pattern":"p-5|p-7|p-9|p-10|p-11|gap-5|gap-7|gap-9|gap-10|gap-11|mt-5|mt-7|mt-9|mt-10|mt-11|mb-5|mr-5|ml-5|px-5|py-5|pt-5|pb-5|space-x-5|space-y-5","
+[subagent] Grep {"pattern":"text-sm|text-lg|text-xl|text-2xl|text-3xl|text-xs|text-base|font-family|fontSize","path":"E://Projects//Airtribe_PM//SWO_Project//docs//ev
+[subagent] Grep {"pattern":"rounded-|shadow-","path":"E://Projects//Airtribe_PM//SWO_Project//docs//evidence//subagent-audit//fixture//after//RiskSummarySection.tsx",
+[subagent] Grep {"pattern":"onClick|onKeyDown|<div|<span","path":"E://Projects//Airtribe_PM//SWO_Project//docs//evidence//subagent-audit//fixture//after//RiskSummaryS
+[subagent] Grep {"pattern":"href=/"#/"|href=/"/"|href=/"javascript:|img","path":"E://Projects//Airtribe_PM//SWO_Project//docs//evidence//subagent-audit//fixture//afte
+[subagent] Grep {"pattern":"site-content//.json|validateSiteContent","path":"E://Projects//Airtribe_PM//SWO_Project//docs//evidence//subagent-audit//fixture//after//R
+[subagent] Grep {"pattern":"font-semibold","path":"E://Projects//Airtribe_PM//SWO_Project//docs//evidence//subagent-audit//fixture//after//RiskSummarySection.tsx","ou
+[subagent] Grep {"pattern":"text-brand-primary|text-body|mt-8|gap-6|gap-3|grid-cols-3","path":"E://Projects//Airtribe_PM//SWO_Project//docs//evidence//subagent-audit/
+[subagent] Grep {"pattern":"font-semibold|font-weight-semibold","path":"E://Projects//Airtribe_PM//SWO_Project//src//styles//tokens.css","output_mode":"content","-n":
+[subagent] Grep {"pattern":"#hero|#problem|#how-it-works|#status|#product|#science|#faq","path":"E://Projects//Airtribe_PM//SWO_Project//docs//content-model.md","outp
+[subagent] Grep {"pattern":"className","path":"E://Projects//Airtribe_PM//SWO_Project//docs//evidence//subagent-audit//fixture//after//RiskSummarySection.tsx","output
+
+Agent tool calls : 1 | subagent_type(s): design-system-auditor
+write/edit calls : 0
+is_error: false | turns: 2 | denials: 0 | models: claude-haiku-4-5-20251001, claude-sonnet-4-6
+
+=================== FINAL RESULT ===================
+# Design-system audit
+
+**Scope:** `docs/evidence/subagent-audit/fixture/after/RiskSummarySection.tsx` — a single file explicitly named in the request. `docs/evidence/` is in scope because the file was explicitly asked for.
+
+**Checks performed:** Read-only inspection of the target file plus the five prerequisite documents (CLAUDE.md, docs/audit-rules.md, docs/style-guide.md, docs/component-reference.md, docs/content-model.md) and `src/styles/tokens.css`. Grep searches within the target file for hard-coded colours, palette references, off-scale spacing, off-system type utilities, arbitrary radii/shadows, interactive-element misuse, placeholder links, and raw content imports. No tests, lint, type-checker, build or browser were run.
+
+**Verdict:** PASS (0 confirmed violations)
+
+## Confirmed violations
+
+None.
+
+## Uncertain observations (need confirmation)
+
+| # | Rule (or "no catalogue rule") | Location | Observation | What would confirm it |
+|---|---|---|---|---|
+| 1 | CONTENT-01 | `docs/evidence/subagent-audit/fixture/after/RiskSummarySection.tsx:16` | The prop `statuses: SiteContent['statuses']` accepts the validated type slice, but the component cannot itself enforce that the caller obtained `statuses` via `validateSiteContent()`. The JSDoc comment instructs the caller but does not enforce it at compile time. | Inspect every call site of `RiskSummarySection` to confirm the `statuses` prop is always sourced from a `validateSiteContent()` result, not from a direct JSON import or a cast. If any call site bypasses the validator, that call site violates CONTENT-01. The component itself does not. |
+
+## Checked and clean
+
+- **DS-COLOR-01 / DS-COLOR-02:** No hard-coded hex, `rgb()`, `hsl()`, named colours, Tailwind arbitrary colour values, or `--palette-*` references. Only the semantic utility `text-brand-primary` (maps to `--color-brand-primary`) is used.
+- **DS-COLOR-03:** `--color-brand-accent` is not used anywhere in this file.
+- **DS-COLOR-04:** No form controls or buttons are present; `--color-border-default` is not used.
+- **DS-STATE-01 / DS-STATE-02:** Green, Amber and Red appear exclusively via `StatusBadge` with the `status` prop — correct workout-decision usage, not decoration.
+- **DS-SPACE-01:** All spacing utilities are in the documented steps: `mt-8` (step 8), `gap-6` (step 6), `gap-3` (step 3). No undocumented steps (`p-5`, `gap-10`, etc.) are present.
+- **DS-TYPE-01:** `text-body` is a documented type token. `font-semibold` maps to `--font-weight-semibold`, a declared token. No Tailwind default type utilities (`text-sm`, `text-xl`, etc.) are used.
+- **DS-RADIUS-01 / DS-SHADOW-01:** No radius or shadow utilities are applied directly in this file.
+- **DS-COMP-01:** The `StatusBadge`, `Card`, `SectionContainer` and `SectionHeading` components are used as specified. No hand-built pattern replaces them.
+- **DS-COMP-02:** `Card` is used with `as="article"` (a documented prop). The `className="flex flex-col gap-3"` appends layout, it does not recreate a different variant.
+- **A11Y-01:** Status is conveyed via `StatusBadge`, which by its spec renders a text label and a distinct icon shape alongside colour.
+- **A11Y-02:** No form controls are present.
+- **A11Y-03:** The only interactive element is a native `<a>` at line 37. No `onClick` on `div`/`span`.
+- **A11Y-04:** No `<img>` elements are present.
+- **A11Y-05:** `SectionContainer` is given `aria-labelledby="risk-summary-heading"` and `SectionHeading` carries `id="risk-summary-heading"` — the landmark has an accessible name. `<li>` items wrapped in `<Card as="article">` form self-contained articles, not landmarks.
+- **A11Y-06:** No buttons or interactive controls are sized in this file.
+- **A11Y-07:** `href="#faq"` — `#faq` is a declared valid in-page section id per `docs/content-model.md` line 65. Not a placeholder link.
+- **RESP-01 / RESP-02:** No fixed-pixel container widths; the grid stacks on narrow screens and expands with `md:grid-cols-3`. No media elements are present.
+- **CONTENT-01:** The component imports `SiteContent` as a type only (no raw JSON import, no literal). It accepts the validated type slice.
+- **CONTENT-02 / CONTENT-03 / CONTENT-04:** No marketing copy is hard-coded in JSX; all text is drawn from the `statuses` prop. No unsupported claims are present in the component itself.
+
+## Recommended next steps
+
+None required — no confirmed violations were found.

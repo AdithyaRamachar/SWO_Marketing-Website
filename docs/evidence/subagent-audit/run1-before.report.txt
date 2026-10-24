@@ -1,0 +1,78 @@
+session_id      : 76c09373-9674-4a3b-8ac5-ea4a78c2951a
+main model      : claude-sonnet-4-6
+agents loaded   : ["claude","claude-code-guide","design-system-auditor","Explore","general-purpose","Plan","statusline-setup"]
+
+--- tool calls (main thread vs inside the subagent) ---
+[main] Agent {"description":"Audit RiskSummarySection.tsx against design system","subagent_type":"design-system-auditor","prompt":"docs/evidence/subagent-audit/fix
+[subagent] Read {"file_path":"E:/Projects/Airtribe_PM/SWO_Project/CLAUDE.md"}
+[subagent] Read {"file_path":"E:/Projects/Airtribe_PM/SWO_Project/docs/audit-rules.md"}
+[subagent] Read {"file_path":"E:/Projects/Airtribe_PM/SWO_Project/docs/style-guide.md"}
+[subagent] Read {"file_path":"E:/Projects/Airtribe_PM/SWO_Project/docs/component-reference.md"}
+[subagent] Read {"file_path":"E:/Projects/Airtribe_PM/SWO_Project/docs/content-model.md"}
+[subagent] Read {"file_path":"E:/Projects/Airtribe_PM/SWO_Project/src/styles/tokens.css"}
+[subagent] Read {"file_path":"E:/Projects/Airtribe_PM/SWO_Project/docs/evidence/subagent-audit/fixture/before/RiskSummarySection.tsx"}
+
+Agent tool calls : 1 | subagent_type(s): design-system-auditor
+write/edit calls : 0
+is_error: false | turns: 2 | denials: 0 | models: claude-haiku-4-5-20251001, claude-sonnet-4-6
+
+=================== FINAL RESULT ===================
+# Design-system audit
+
+**Scope:** `docs/evidence/subagent-audit/fixture/before/RiskSummarySection.tsx` — explicitly named in the request; this path is in `docs/evidence/` but is explicitly requested, so it is in scope per the auditing rules.
+
+**Checks performed:** Read-only inspection of the single target file against `docs/audit-rules.md`, `docs/style-guide.md`, `docs/component-reference.md`, `docs/content-model.md`, and `src/styles/tokens.css`. No tests, lint, type-check, build or browser were run.
+
+**Verdict:** FAIL (3 confirmed violations)
+
+---
+
+## Confirmed violations
+
+| # | Severity | Rule | Location | Evidence | Why it breaks the rule | Recommended fix |
+|---|---|---|---|---|---|---|
+| 1 | High | CONTENT-01 | `docs/evidence/subagent-audit/fixture/before/RiskSummarySection.tsx:15` | `import rawContent from '../../../../../src/content/site-content.json';` and line 24 `const statuses = rawContent.statuses;` | The component imports `site-content.json` directly and reads from `rawContent` without passing through `validateSiteContent()`. `content-model.md` ("The boundary") requires all content to pass through `validateSiteContent()` before a component may use it; only the `{ ok: true, data: SiteContent }` branch yields a typed `SiteContent`. This component bypasses the validation boundary entirely. | Remove the direct JSON import. Accept a `SiteContent` (the validated type) prop instead, or call `validateSiteContent()` at the module/page level and pass the result's `data` field down. |
+| 2 | High | A11Y-01 | `docs/evidence/subagent-audit/fixture/before/RiskSummarySection.tsx:33` | `<span className={\`inline-block size-4 rounded-pill ${dotColour[entry.state]}\`} />` followed only by `<p className="text-body">{entry.meaning}</p>` | Each status state is indicated solely by a coloured dot (a `size-4` circle whose background colour is the only distinguishing mark). There is no text label naming the state (green/amber/red) and no distinct icon shape. `audit-rules.md` A11Y-01 and `style-guide.md` "RAG status badge" both require that status is conveyed with a text label **and** a distinct icon shape, not by colour alone. `entry.meaning` is the meaning of the state, not its name — it does not satisfy the label requirement. The component also does not use the `StatusBadge` component which is specified for this purpose. | Replace the hand-built coloured dot with `<StatusBadge status={entry.state} />`. `StatusBadge` renders the label, a distinct icon shape, and a visually-hidden colour name for screen readers, satisfying A11Y-01 and DS-COMP-01. |
+| 3 | High | DS-COLOR-01 | `docs/evidence/subagent-audit/fixture/before/RiskSummarySection.tsx:41` | `style={{ color: '#0B7A6B' }}` | The inline style hard-codes the hex value `#0B7A6B` directly on the anchor element. `audit-rules.md` DS-COLOR-01 prohibits any hard-coded colour (hex, `rgb()`, `hsl()`, named colour, or Tailwind arbitrary `[#…]`) in components; the semantic token `--color-brand-primary` (which resolves to exactly `#0B7A6B` per `tokens.css` line 80) must be used instead. | Remove `style={{ color: '#0B7A6B' }}` and apply the Tailwind semantic utility `text-brand-primary` (which Tailwind v4 derives from `--color-brand-primary`). |
+
+---
+
+## Uncertain observations (need confirmation)
+
+| # | Rule (or "no catalogue rule") | Location | Observation | What would confirm it |
+|---|---|---|---|---|
+| 1 | DS-COMP-01 | `docs/evidence/subagent-audit/fixture/before/RiskSummarySection.tsx:33` | The coloured dot is a hand-built status indicator. Even if A11Y-01 is fixed by adding a label and icon, a `StatusBadge` component exists precisely for this purpose. The current code hand-builds a pattern the component already provides. | Confirmed if `StatusBadge` is the authoritative component for all workout decision state displays (confirmed by `component-reference.md` — "Use **only** for workout decisions"). This is effectively confirmed alongside violation #2 above, but listed separately because the structural DS-COMP-01 angle is independent of the accessibility angle. |
+| 2 | A11Y-07 | `docs/evidence/subagent-audit/fixture/before/RiskSummarySection.tsx:41` | The link `href="#faq"` is an in-page anchor. `content-model.md` validates that `#faq` is a recognised section id. Whether an element with `id="faq"` actually exists in the rendered page at runtime cannot be confirmed from this file alone. | Confirmed if no element with `id="faq"` is present in the page's rendered HTML. From code inspection alone, the anchor appears legitimate; this is an uncertain observation, not a violation. |
+
+---
+
+## Checked and clean
+
+- **DS-COLOR-02 (palette token / default Tailwind colour utility in components):** The `dotColour` map uses semantic token utilities (`bg-status-green-fg`, `bg-status-amber-fg`, `bg-status-red-fg`) — not palette tokens or default Tailwind colour utilities like `bg-red-500`. No violation.
+- **DS-COLOR-03 (`--color-brand-accent` used as text colour):** `--color-brand-accent` is not referenced anywhere in the file.
+- **DS-COLOR-04 (`--color-border-default` on a form control):** No form controls are present; no border tokens are used.
+- **DS-STATE-01 / DS-STATE-02 (Green/Amber/Red as decoration):** The states are used to represent workout decision statuses, which is their intended semantic use. No decorative misuse observed (though A11Y-01 is still violated by colour-only conveyance).
+- **DS-SPACE-01 (off-scale spacing):** Spacing utilities used are `mt-8` (step 8), `gap-6` (step 6), `gap-3` (step 3) — all within the documented steps (1, 2, 3, 4, 6, 8, 12, 16). No violation.
+- **DS-TYPE-01 (off-scale typography):** `text-body` is used — a documented scale token. No arbitrary font size. No violation.
+- **DS-RADIUS-01 (arbitrary radius):** `rounded-pill` is used — a documented radius token. No violation.
+- **DS-SHADOW-01 (arbitrary shadow):** No shadow utilities are applied. No violation.
+- **DS-COMP-02 (undocumented variants/props):** `Card as="article"` is a documented prop combination per `component-reference.md`. `SectionContainer` with `aria-labelledby` and `SectionHeading` with `id` and `title` are all documented. No violation.
+- **A11Y-02 (form controls without visible labels):** No form controls present. No violation.
+- **A11Y-03 (non-interactive elements with onClick, missing focus indicator):** No `onClick` on `div`/`span`; no `outline: none`. No violation.
+- **A11Y-04 (img without alt):** No `img` elements. No violation.
+- **A11Y-05 (heading order, landmark naming):** `<SectionContainer aria-labelledby="risk-summary-heading">` names the landmark; `SectionHeading id="risk-summary-heading"` matches. No violation.
+- **A11Y-06 (targets below min-target-size):** No interactive targets beyond the anchor link, which is not height-constrained in a way that could be inspected statically from this file alone.
+- **RESP-01 / RESP-02 (responsive layout):** Grid with `md:grid-cols-3` is mobile-first. No fixed pixel widths on containers. No violation apparent from static inspection.
+- **CONTENT-02 (unsupported claims):** No marketing copy is hard-coded in JSX; `entry.meaning` is rendered from content data. No violation visible in this file.
+- **CONTENT-03 (marketing copy hard-coded in JSX):** The only literal string in JSX is `"Questions?"` and `"Read the FAQ"` — these are minor navigation-chrome labels, not headings, feature copy, or CTA text. This is a borderline case but does not rise to a confirmed violation.
+- **CONTENT-04 (implying mockups are live):** No such implication in this file.
+
+---
+
+## Recommended next steps
+
+1. **(CONTENT-01 — highest risk)** Remove the direct `import rawContent from '…/site-content.json'` import. Refactor `RiskSummarySection` to accept a prop of type `SiteContent` (the validated type exported from `src/content/validate.ts`) so it can only receive data that has already passed through `validateSiteContent()`.
+
+2. **(A11Y-01)** Replace the hand-built coloured-dot `<span>` with `<StatusBadge status={entry.state} />`. This simultaneously resolves the accessibility violation and the DS-COMP-01 observation (reusing the existing component rather than hand-building the pattern).
+
+3. **(DS-COLOR-01)** Remove `style={{ color: '#0B7A6B' }}` from the anchor element and replace it with the semantic Tailwind utility `text-brand-primary`.

@@ -1,0 +1,11 @@
+You are joining an existing software project in this directory. You have not seen it before and nobody will explain it to you. Using only the project context you were given automatically and, if you need detail, files you can read in this repository, answer the numbered questions. Do not run any commands and do not modify anything. Answer each question in one to three sentences, name the file or command involved, and say "not stated" if the project context does not tell you.
+
+1. Which git branch should work be done on, and what is the role of main?
+2. Where are the design tokens defined, and may I add a second token file in TypeScript?
+3. What single command is the full quality gate, and what does it include?
+4. How must marketing content reach a React component, and what is forbidden?
+5. Which phase is the project in, and what is explicitly NOT done yet?
+6. How do I run the project's subagent and its skill, and what registration caveat applies to a tool created mid-session?
+7. What was wrong with the token tracker's first collector version, and how do I count sessions honestly?
+8. Name four things marketing copy must never claim or invent, and how status colours must be presented.
+9. I want to start Phase D and build the landing page right now. Should I? Why or why not?

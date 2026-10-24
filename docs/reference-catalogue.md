@@ -31,10 +31,10 @@ Purpose: preserve why each reference was selected. The uploaded screenshots are 
 
 | ID | Asset | Potential use | Guardrail |
 |---|---|---|---|
-| PHOTO-01 | `references/photography/landing-page-photo.jpg` | Possible hero/supporting image after inspection | Confirm crop, negative space, and contrast |
+| PHOTO-01 | `references/photography/landing-page-photo.png` | Possible hero/supporting image after inspection | Confirm crop, negative space, and contrast |
 | PHOTO-02 | `references/photography/post-workout-01.jpg` | Recovery/training context | Avoid suggesting a specific medical state |
 | PHOTO-03 | `references/photography/workout-01.jpg` | Supporting strength-training section | Crop responsively |
-| PHOTO-04 | `references/photography/workout-02.jpg` | Supporting strength-training section | Crop responsively |
+| PHOTO-04 | `references/photography/workout-02.png` | Supporting strength-training section | Crop responsively |
 
 ## External research starting points
 
